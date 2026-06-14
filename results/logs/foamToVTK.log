@@ -1,0 +1,43 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  11
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 11-e1fc8c682ae6
+Exec   : foamToVTK -case /workspace/cases/lid_driven_cavity -latestTime -fields (U)
+Date   : Jun 14 2026
+Time   : 16:56:12
+Host   : "f8a7de1b6576"
+PID    : 196
+I/O    : uncollated
+Case   : /workspace/cases/lid_driven_cavity
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 5
+
+Time: 5
+    volVectorFields            : U
+
+    Internal  : "/workspace/cases/lid_driven_cavity/VTK/lid_driven_cavity_1000.vtk"
+    Original cells:1600 points:3362   Additional cells:0  additional points:0
+
+Combining patches:
+    patch 0 bottom
+    patch 1 right
+    patch 2 top
+    patch 3 left
+    discarding empty/nonConformal/processor patch 4 frontAndBack
+    Patch     : "/workspace/cases/lid_driven_cavity/VTK/bottom/bottom_1000.vtk"
+    Patch     : "/workspace/cases/lid_driven_cavity/VTK/right/right_1000.vtk"
+    Patch     : "/workspace/cases/lid_driven_cavity/VTK/top/top_1000.vtk"
+    Patch     : "/workspace/cases/lid_driven_cavity/VTK/left/left_1000.vtk"
+End
+

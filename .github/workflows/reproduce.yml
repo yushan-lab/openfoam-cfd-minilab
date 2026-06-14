@@ -1,0 +1,96 @@
+name: Reproduce OpenFOAM Lid-Driven Cavity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare diagnostic output directories
+        run: |
+          mkdir -p results/logs figures
+          {
+            echo "GitHub Actions OpenFOAM reproduction workflow started."
+            date -u
+            pwd
+          } > results/logs/workflow_debug.log
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest matplotlib numpy
+
+      - name: Run Python tests on host
+        run: python -m pytest tests/test_cavity_repository.py -q --basetemp .pytest_tmp
+
+      - name: Run bash syntax checks
+        run: |
+          bash -n scripts/run_cavity.sh
+          bash -n scripts/clean_case.sh
+          bash -n scripts/ci_run_openfoam_in_container.sh
+
+      - name: Run OpenFOAM solver in Docker
+        run: |
+          mkdir -p results/logs figures results
+          chmod -R u+rwX results figures cases scripts
+          set -o pipefail
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            --entrypoint /bin/bash \
+            openfoam/openfoam11-paraview510:11 \
+            -lc 'bash scripts/ci_run_openfoam_in_container.sh' \
+            2>&1 | tee results/logs/docker_openfoam.log
+
+      - name: Verify Docker OpenFOAM execution markers and solver logs
+        if: always()
+        run: |
+          set -euo pipefail
+          grep -q "BEGIN_OPENFOAM_RUN" results/logs/docker_openfoam.log
+          grep -q "END_OPENFOAM_RUN" results/logs/docker_openfoam.log
+          test -s results/logs/blockMesh.log
+          test -s results/logs/checkMesh.log
+          test -s results/logs/icoFoam.log
+
+      - name: Diagnose files after Docker run
+        if: always()
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 6 -type f | sort
+          ls -la results results/logs figures || true
+
+      - name: Generate plots and CSV summaries on host
+        run: |
+          python scripts/plot_residuals.py \
+            --log results/logs/icoFoam.log \
+            --output figures/cavity_residuals.png \
+            --csv results/residuals.csv
+          python scripts/postprocess_cavity.py \
+            --case cases/lid_driven_cavity \
+            --results results \
+            --figures figures
+
+      - name: Check required outputs
+        run: python scripts/check_outputs.py
+
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openfoam-cavity-results
+          path: |
+            results/
+            figures/
