@@ -1,0 +1,11 @@
+Executed from: /workspace/cases/lid_driven_cavity
+Selected mesh: 40x40
+RUN_PYTHON_POSTPROCESS=0
+cp system/blockMeshDict.40x40 system/blockMeshDict
+blockMesh -case "/workspace/cases/lid_driven_cavity"
+checkMesh -case "/workspace/cases/lid_driven_cavity"
+icoFoam -case "/workspace/cases/lid_driven_cavity"
+postProcess -case "/workspace/cases/lid_driven_cavity" -func writeCellCentres -latestTime  # optional
+foamToVTK -case "/workspace/cases/lid_driven_cavity" -latestTime -fields "(U)"  # optional
+python scripts/plot_residuals.py --log results/logs/icoFoam.log --output figures/cavity_residuals.png --csv results/residuals.csv
+python scripts/postprocess_cavity.py --case cases/lid_driven_cavity --results results --figures figures

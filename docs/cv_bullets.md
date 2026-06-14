@@ -9,8 +9,8 @@
 
 ## After successful OpenFOAM reproduction
 
-Use these bullets only after the GitHub Actions workflow or another OpenFOAM-enabled environment has produced the required logs, CSV files, and figures.
+Supported by the copied GitHub Actions artifact currently present under `results/` and `figures/`.
 
-- Reproduced the `Re = 100` lid-driven cavity case with OpenFOAM `icoFoam`, including `blockMesh`, `checkMesh`, solver logging, field-based centerline extraction, and Python post-processing.
-- Archived OpenFOAM run logs, centerline velocity CSVs, residual-history plots, and centerline-profile figures as a reproducible workflow artifact.
-- Added a CI output checker that fails the reproduction workflow unless required solver logs, residual CSVs, centerline data, and figures exist and are non-empty.
+- Reproduced the `Re = 100` lid-driven cavity case in GitHub Actions with OpenFOAM 11 `icoFoam`; retained `blockMesh`, `checkMesh`, and `icoFoam` logs showing mesh generation, `Mesh OK`, and solver completion at `Time = 5s`.
+- Produced artifact-backed residual and centerline post-processing outputs: `results/residuals.csv`, `results/centerline_u.csv`, `results/centerline_v.csv`, `figures/cavity_residuals.png`, and `figures/cavity_centerline_profiles.png`.
+- Included a velocity-magnitude visualization, `figures/cavity_velocity_magnitude.png`, generated from the reproduced cavity field output.
