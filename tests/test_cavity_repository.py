@@ -164,6 +164,7 @@ def test_output_checker_requires_real_nonempty_outputs():
             "results/logs/blockMesh.log",
             "results/logs/checkMesh.log",
             "results/logs/icoFoam.log",
+            "results/residuals.csv",
             "results/centerline_u.csv",
             "results/centerline_v.csv",
             "figures/cavity_residuals.png",
@@ -254,7 +255,9 @@ def test_ci_openfoam_container_script_contract():
     assert "OpenFOAM commands are not available after sourcing bashrc." in script
     assert "set +e\nMESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh\nRUN_STATUS=$?\nset -e" in script
     assert 'echo "run_cavity.sh exit status: $RUN_STATUS"' in script
-    assert "results/logs/postProcess_sample.log" in script
+    assert "results/logs/writeCellCentres.log" in script
+    assert "results/logs/writeCellCentres_skipped.log" in script
+    assert "results/logs/postProcess_sample.log" not in script
     assert "results/logs/foamToVTK.log" in script
     assert "results/logs/foamToVTK_skipped.log" in script
     assert "results/logs/python_postprocess_skipped.log" in script
@@ -268,26 +271,108 @@ def test_ci_openfoam_container_script_contract():
     assert "tail -n 30 results/logs/blockMesh.log" not in script
     assert "tail -n 30 results/logs/checkMesh.log" not in script
     assert "tail -n 30 results/logs/icoFoam.log" not in script
+    assert 'grep -q "End" results/logs/icoFoam.log' in script
     assert script.index('if [ "$RUN_STATUS" -ne 0 ]; then') < script.index("for log_file in")
+    assert script.index('grep -q "End" results/logs/icoFoam.log') > script.index("for log_file in")
     assert script.index("for log_file in") < script.index('echo "END_OPENFOAM_RUN"')
     assert "find results figures -maxdepth 4 -type f | sort" in script
     assert 'echo "END_OPENFOAM_RUN"' in script
 
 
-def test_run_script_verifies_solver_logs_before_postprocessing():
+def test_run_script_requires_solver_only_and_treats_openfoam_postprocessing_as_optional():
     script = (ROOT / "scripts/run_cavity.sh").read_text()
-    python_skip_index = script.index('if [ "$RUN_PYTHON_POSTPROCESS" = "0" ]')
 
     assert 'LOG_DIR="$ROOT_DIR/results/logs"' in script
     assert 'RESULT_DIR="$ROOT_DIR/results"' in script
     assert 'FIGURE_DIR="$ROOT_DIR/figures"' in script
     assert 'mkdir -p "$LOG_DIR" "$FIGURE_DIR" "$RESULT_DIR"' in script
+    assert "for cmd in blockMesh checkMesh icoFoam; do" in script
+    assert "for cmd in blockMesh checkMesh icoFoam postProcess; do" not in script
+    assert 'blockMesh -case "$CASE_DIR"' in script
+    assert 'checkMesh -case "$CASE_DIR"' in script
+    assert 'icoFoam -case "$CASE_DIR"' in script
     assert "verify_solver_logs" in script
     assert 'verify_nonempty_file "$LOG_DIR/blockMesh.log"' in script
     assert 'verify_nonempty_file "$LOG_DIR/checkMesh.log"' in script
     assert 'verify_nonempty_file "$LOG_DIR/icoFoam.log"' in script
-    assert '\nverify_solver_logs\n\nif [ "$RUN_PYTHON_POSTPROCESS" = "0" ]' in script
+    assert 'postProcess -case "$CASE_DIR" -func writeCellCentres -latestTime' in script
+    assert "writeCellCentres_skipped.log" in script
+    assert "postProcess -func sample" not in script
+    assert "sample -latestTime" not in script
+    assert "postProcess_sample.log" not in script
+    assert "foamToVTK_skipped.log" in script
+    assert 'if ! foamToVTK -case "$CASE_DIR" -latestTime -fields "(U)"' in script
     assert 'find "$ROOT_DIR/results" "$ROOT_DIR/figures" -maxdepth 3 -type f | sort' in script
+
+
+def test_postprocess_reconstructs_structured_centres_from_case_block_mesh():
+    module = load_module(ROOT / "scripts/postprocess_cavity.py")
+
+    centres = module.reconstruct_structured_cell_centres(
+        ROOT / "cases/lid_driven_cavity/system/blockMeshDict"
+    )
+
+    assert len(centres) == 40 * 40
+    assert centres[0] == (0.0125, 0.0125, 0.0)
+    assert centres[-1] == (0.9875, 0.9875, 0.0)
+
+
+def test_postprocess_reads_final_time_u_and_extracts_centerlines_without_sample_output():
+    module = load_module(ROOT / "scripts/postprocess_cavity.py")
+
+    with TemporaryDirectory() as temp_dir:
+        case_dir = Path(temp_dir) / "case"
+        (case_dir / "system").mkdir(parents=True)
+        (case_dir / "5").mkdir()
+        (case_dir / "system/blockMeshDict").write_text(
+            """
+            FoamFile { object blockMeshDict; }
+            vertices
+            (
+                (0 0 -0.005)
+                (1 0 -0.005)
+                (1 1 -0.005)
+                (0 1 -0.005)
+                (0 0  0.005)
+                (1 0  0.005)
+                (1 1  0.005)
+                (0 1  0.005)
+            );
+            blocks
+            (
+                hex (0 1 2 3 4 5 6 7) (2 2 1) simpleGrading (1 1 1)
+            );
+            """
+        )
+        (case_dir / "5/U").write_text(
+            """
+            FoamFile { object U; }
+            dimensions [0 1 -1 0 0 0 0];
+            internalField nonuniform List<vector>
+            4
+            (
+            (0.10 -0.10 0)
+            (0.20 -0.20 0)
+            (0.30 -0.30 0)
+            (0.40 -0.40 0)
+            )
+            ;
+            boundaryField {}
+            """
+        )
+
+        cells, latest_time, centre_source = module.load_final_velocity_cells(case_dir)
+        vertical_rows = module.extract_nearest_centerline(
+            cells, fixed_axis="x", fixed_value=0.5, varying_axis="y"
+        )
+        horizontal_rows = module.extract_nearest_centerline(
+            cells, fixed_axis="y", fixed_value=0.5, varying_axis="x"
+        )
+
+        assert latest_time == "5"
+        assert centre_source == "reconstructed from blockMeshDict"
+        assert [(row.y, row.Ux) for row in vertical_rows] == [(0.25, 0.1), (0.75, 0.3)]
+        assert [(row.x, row.Uy) for row in horizontal_rows] == [(0.25, -0.1), (0.75, -0.2)]
 
 
 def test_plot_residuals_reports_missing_log_with_directory_listing():
@@ -329,11 +414,15 @@ def test_docs_describe_cloud_reproduction_and_cv_bullet_gating():
     assert "OpenFOAM Docker image" in readme
     assert "OpenFOAM 11" in readme
     assert "physicalProperties" in readme
+    assert "blockMesh/checkMesh/icoFoam" in readme
+    assert "final-time OpenFOAM field output" in readme
     assert "openfoam-cavity-results" in readme
     assert "case setup" in readme.lower()
     assert "executed solver results" in readme.lower()
     assert "transportProperties is the only" not in readme
     assert "only required viscosity file" not in readme.lower()
+    assert "Run postProcess -func sample" not in readme
+    assert "centerline profiles are generated only from OpenFOAM sample files" not in readme
     assert "Before successful OpenFOAM reproduction" in cv_text
     assert "After successful OpenFOAM reproduction" in cv_text
 

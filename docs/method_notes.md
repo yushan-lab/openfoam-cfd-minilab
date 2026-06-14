@@ -14,7 +14,7 @@ This mini-lab is set up to show a conventional OpenFOAM workflow for a laminar i
 
 3. Physical properties
 
-   `constant/transportProperties` defines Newtonian laminar flow with `nu = 0.01`. With `U = 1` and `L = 1`, this gives `Re = 100`.
+   `constant/physicalProperties` defines the OpenFOAM Foundation v11 kinematic viscosity with `nu = 0.01`. The older `constant/transportProperties` file is retained for compatibility with variants that still read it. With `U = 1` and `L = 1`, this gives `Re = 100`.
 
 4. `fvSchemes`
 
@@ -32,21 +32,23 @@ This mini-lab is set up to show a conventional OpenFOAM workflow for a laminar i
 
    `scripts/run_cavity.sh` redirects solver output to `results/logs/icoFoam.log`. `scripts/plot_residuals.py` parses `Initial residual` lines from that log and can write `results/residuals.csv` plus `figures/cavity_residuals.png`.
 
-8. Sampling
+8. Centerline extraction
 
-   `system/sampleDict` defines two uniform sampled sets:
+   OpenFOAM Foundation v11 in the CI container does not require the legacy `sample` command for this project. After `icoFoam`, Python post-processing reads the final-time OpenFOAM `U` volVectorField directly. If the best-effort `writeCellCentres` function creates a final-time `C` field, the Python script uses those cell centres. Otherwise, it reconstructs the structured cell centres from `system/blockMeshDict`.
 
-   - vertical centerline: `x = 0.5`, from `y = 0` to `y = 1`
-   - horizontal centerline: `y = 0.5`, from `x = 0` to `x = 1`
+   The centerline CSVs use nearest-cell extraction:
 
-   `scripts/postprocess_cavity.py` reads real OpenFOAM sample outputs and writes `results/centerline_u.csv`, `results/centerline_v.csv`, and `figures/cavity_centerline_profiles.png`.
+   - vertical profile: nearest cell values to `x = 0.5`, written as `y,Ux`
+   - horizontal profile: nearest cell values to `y = 0.5`, written as `x,Uy`
+
+   This produces `results/centerline_u.csv`, `results/centerline_v.csv`, and `figures/cavity_centerline_profiles.png` from final-time OpenFOAM field output without fabricating or hard-coding profile values.
 
 9. Field visualization
 
-   If `foamToVTK` is available, `scripts/run_cavity.sh` exports the latest velocity field. `scripts/postprocess_cavity.py` can read a legacy VTK file containing `VECTORS U` and generate `figures/cavity_velocity_magnitude.png`. If VTK export is unavailable, use ParaView locally after running the case.
+   `scripts/postprocess_cavity.py` also uses the final-time cell-centred `U` values to generate `figures/cavity_velocity_magnitude.png`. `foamToVTK` remains a best-effort optional export for local inspection, and ParaView remains the recommended tool for detailed visual review.
 
 ## Reproducibility Notes
 
 - Generated OpenFOAM mesh/time directories are ignored by git.
 - Results and figures should be committed only when they come from an actual solver run.
-- The current repository setup has tests for required files, Re=100 parameters, residual parsing, centerline CSV writing, and conservative CV bullets.
+- The current repository setup has tests for required files, Re=100 parameters, residual parsing, final-field centerline extraction, output checking, and conservative CV bullets.

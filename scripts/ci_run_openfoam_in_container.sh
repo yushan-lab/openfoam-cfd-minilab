@@ -66,7 +66,8 @@ for f in \
     results/logs/blockMesh.log \
     results/logs/checkMesh.log \
     results/logs/icoFoam.log \
-    results/logs/postProcess_sample.log \
+    results/logs/writeCellCentres.log \
+    results/logs/writeCellCentres_skipped.log \
     results/logs/foamToVTK.log \
     results/logs/foamToVTK_skipped.log \
     results/logs/python_postprocess_skipped.log; do
@@ -94,6 +95,11 @@ for log_file in \
         exit 1
     fi
 done
+
+if ! grep -q "End" results/logs/icoFoam.log; then
+    echo "icoFoam.log does not contain the solver completion marker: End" >&2
+    exit 1
+fi
 
 find results figures -maxdepth 4 -type f | sort
 echo "END_OPENFOAM_RUN"

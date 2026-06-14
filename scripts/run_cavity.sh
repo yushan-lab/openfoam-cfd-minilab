@@ -40,7 +40,7 @@ if [ ! -f "$MESH_DICT" ]; then
 fi
 
 missing=()
-for cmd in blockMesh checkMesh icoFoam postProcess; do
+for cmd in blockMesh checkMesh icoFoam; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         missing+=("$cmd")
     fi
@@ -49,7 +49,7 @@ done
 if [ "${#missing[@]}" -gt 0 ]; then
     {
         echo "OpenFOAM command(s) not found on PATH: ${missing[*]}"
-        echo "No mesh, solver, residual, sample, or figure output was generated."
+        echo "No mesh, solver, residual, or figure output was generated."
         echo "Requested mesh dictionary: $MESH_DICT"
         echo ""
         echo "Run this from an OpenFOAM-enabled shell:"
@@ -61,40 +61,51 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 cp "$MESH_DICT" "$CASE_DIR/system/blockMeshDict"
-cd "$CASE_DIR"
-
 {
     echo "Executed from: $CASE_DIR"
     echo "Selected mesh: ${MESH_RESOLUTION}x${MESH_RESOLUTION}"
     echo "RUN_PYTHON_POSTPROCESS=$RUN_PYTHON_POSTPROCESS"
     echo "cp system/blockMeshDict.${MESH_RESOLUTION}x${MESH_RESOLUTION} system/blockMeshDict"
-    echo "blockMesh"
-    echo "checkMesh"
-    echo "icoFoam"
-    echo "postProcess -func sample -latestTime"
+    echo "blockMesh -case \"$CASE_DIR\""
+    echo "checkMesh -case \"$CASE_DIR\""
+    echo "icoFoam -case \"$CASE_DIR\""
+    if command -v postProcess >/dev/null 2>&1; then
+        echo "postProcess -case \"$CASE_DIR\" -func writeCellCentres -latestTime  # optional"
+    fi
     if command -v foamToVTK >/dev/null 2>&1; then
-        echo "foamToVTK -latestTime -fields \"(U)\""
+        echo "foamToVTK -case \"$CASE_DIR\" -latestTime -fields \"(U)\"  # optional"
     fi
     echo "python scripts/plot_residuals.py --log results/logs/icoFoam.log --output figures/cavity_residuals.png --csv results/residuals.csv"
     echo "python scripts/postprocess_cavity.py --case cases/lid_driven_cavity --results results --figures figures"
 } > "$LOG_DIR/command_sequence.txt"
 
-blockMesh > "$LOG_DIR/blockMesh.log" 2>&1
-checkMesh > "$LOG_DIR/checkMesh.log" 2>&1
-icoFoam > "$LOG_DIR/icoFoam.log" 2>&1
+blockMesh -case "$CASE_DIR" > "$LOG_DIR/blockMesh.log" 2>&1
+checkMesh -case "$CASE_DIR" > "$LOG_DIR/checkMesh.log" 2>&1
+icoFoam -case "$CASE_DIR" > "$LOG_DIR/icoFoam.log" 2>&1
 verify_solver_logs
 
-if ! postProcess -func sample -latestTime > "$LOG_DIR/postProcess_sample.log" 2>&1; then
+if command -v postProcess >/dev/null 2>&1; then
+    if ! postProcess -case "$CASE_DIR" -func writeCellCentres -latestTime > "$LOG_DIR/writeCellCentres.log" 2>&1; then
+        {
+            echo "postProcess writeCellCentres failed; continuing because blockMesh, checkMesh, and icoFoam succeeded."
+            echo "Python post-processing will reconstruct structured cell centres from system/blockMeshDict if C is unavailable."
+            echo "See $LOG_DIR/writeCellCentres.log for the OpenFOAM diagnostic output."
+        } > "$LOG_DIR/writeCellCentres_skipped.log"
+    fi
+else
     {
-        echo ""
-        echo "postProcess sampling failed. Some OpenFOAM versions require the legacy sample command."
-        echo "Attempting: sample -latestTime"
-    } >> "$LOG_DIR/postProcess_sample.log"
-    sample -latestTime >> "$LOG_DIR/postProcess_sample.log" 2>&1
+        echo "postProcess not found; skipping optional writeCellCentres."
+        echo "Python post-processing will reconstruct structured cell centres from system/blockMeshDict."
+    } > "$LOG_DIR/writeCellCentres_skipped.log"
 fi
 
 if command -v foamToVTK >/dev/null 2>&1; then
-    foamToVTK -latestTime -fields "(U)" > "$LOG_DIR/foamToVTK.log" 2>&1
+    if ! foamToVTK -case "$CASE_DIR" -latestTime -fields "(U)" > "$LOG_DIR/foamToVTK.log" 2>&1; then
+        {
+            echo "foamToVTK failed; skipping optional VTK field export."
+            echo "See $LOG_DIR/foamToVTK.log for the OpenFOAM diagnostic output."
+        } > "$LOG_DIR/foamToVTK_skipped.log"
+    fi
 else
     echo "foamToVTK not found; skipping optional VTK field export." > "$LOG_DIR/foamToVTK_skipped.log"
 fi

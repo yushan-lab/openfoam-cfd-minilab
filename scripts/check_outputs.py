@@ -12,6 +12,7 @@ REQUIRED_OUTPUTS = [
     "results/logs/blockMesh.log",
     "results/logs/checkMesh.log",
     "results/logs/icoFoam.log",
+    "results/residuals.csv",
     "results/centerline_u.csv",
     "results/centerline_v.csv",
     "figures/cavity_residuals.png",
@@ -95,4 +96,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
