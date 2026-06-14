@@ -180,9 +180,12 @@ def test_github_actions_reproduction_workflow_contract():
     assert "BEGIN_OPENFOAM_RUN" in workflow
     assert "END_OPENFOAM_RUN" in workflow
     assert "WM_PROJECT_DIR=${WM_PROJECT_DIR:-unset}" in workflow
-    assert "which blockMesh" in workflow
-    assert "which checkMesh" in workflow
-    assert "which icoFoam" in workflow
+    assert '          set -euo pipefail\n          docker run' in workflow
+    assert '              set -eo pipefail\n              echo "BEGIN_OPENFOAM_RUN"' in workflow
+    assert '              set -euo pipefail\n              echo "BEGIN_OPENFOAM_RUN"' not in workflow
+    assert "command -v blockMesh" in workflow
+    assert "command -v checkMesh" in workflow
+    assert "command -v icoFoam" in workflow
     assert 'grep -q "BEGIN_OPENFOAM_RUN" results/logs/docker_openfoam.log' in workflow
     assert 'grep -q "END_OPENFOAM_RUN" results/logs/docker_openfoam.log' in workflow
     assert "test -s results/logs/blockMesh.log" in workflow

@@ -50,7 +50,7 @@ jobs:
             --entrypoint /bin/bash \
             openfoam/openfoam11-paraview510:11 \
             -lc '
-              set -euo pipefail
+              set -eo pipefail
               echo "BEGIN_OPENFOAM_RUN"
               pwd
               ls -la
@@ -65,9 +65,9 @@ jobs:
                 exit 1
               fi
               echo "WM_PROJECT_DIR=${WM_PROJECT_DIR:-unset}"
-              which blockMesh
-              which checkMesh
-              which icoFoam
+              command -v blockMesh
+              command -v checkMesh
+              command -v icoFoam
               MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
               test -s results/logs/blockMesh.log
               test -s results/logs/checkMesh.log
