@@ -42,8 +42,11 @@ jobs:
       - name: Run OpenFOAM solver in Docker
         run: |
           mkdir -p results/logs figures results
+          chmod -R u+rwX results figures cases scripts
           set -o pipefail
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
             --entrypoint /bin/bash \

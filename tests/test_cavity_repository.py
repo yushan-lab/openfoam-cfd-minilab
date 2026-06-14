@@ -185,8 +185,9 @@ def test_github_actions_reproduction_workflow_contract():
     assert "openfoam/openfoam11-paraview510:11" in workflow
     assert "--entrypoint /bin/bash" in workflow
     assert 'bash scripts/ci_run_openfoam_in_container.sh' in workflow
-    assert "--user" not in workflow
-    assert "-e HOME=/tmp" not in workflow
+    assert '--user "$(id -u):$(id -g)"' in workflow
+    assert "-e HOME=/tmp" in workflow
+    assert "chmod -R u+rwX results figures cases scripts" in workflow
     assert "set -o pipefail" in workflow
     assert "set -euo pipefail\n          docker run" not in workflow
     assert 'grep -q "BEGIN_OPENFOAM_RUN" results/logs/docker_openfoam.log' in workflow
@@ -218,7 +219,14 @@ def test_ci_openfoam_container_script_contract():
     assert 'ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"' in script
     assert 'mkdir -p "$ROOT_DIR/results/logs" "$ROOT_DIR/figures" "$ROOT_DIR/results"' in script
     assert 'echo "BEGIN_OPENFOAM_RUN"' in script
+    assert 'echo "Container user:"' in script
+    assert "\nid\n" in script
+    assert 'ls -ld "$ROOT_DIR" "$ROOT_DIR/results" "$ROOT_DIR/results/logs" "$ROOT_DIR/cases" "$ROOT_DIR/figures"' in script
+    assert 'touch "$ROOT_DIR/results/logs/write_test.log"' in script
+    assert 'rm -f "$ROOT_DIR/results/logs/write_test.log"' in script
+    assert "Container cannot write to results/logs; check Docker --user or workspace permissions." in script
     assert 'SOURCE_LOG="$ROOT_DIR/results/logs/source_openfoam.log"' in script
+    assert script.index('touch "$ROOT_DIR/results/logs/write_test.log"') < script.index('SOURCE_LOG="$ROOT_DIR/results/logs/source_openfoam.log"')
     assert "set +e" in script
     assert "source /opt/openfoam11/etc/bashrc" in script
     assert "source /usr/lib/openfoam/openfoam11/etc/bashrc" in script

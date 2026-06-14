@@ -9,6 +9,15 @@ mkdir -p "$ROOT_DIR/results/logs" "$ROOT_DIR/figures" "$ROOT_DIR/results"
 echo "BEGIN_OPENFOAM_RUN"
 pwd
 ls -la
+echo "Container user:"
+id
+ls -ld "$ROOT_DIR" "$ROOT_DIR/results" "$ROOT_DIR/results/logs" "$ROOT_DIR/cases" "$ROOT_DIR/figures"
+
+if ! touch "$ROOT_DIR/results/logs/write_test.log"; then
+    echo "Container cannot write to results/logs; check Docker --user or workspace permissions." >&2
+    exit 1
+fi
+rm -f "$ROOT_DIR/results/logs/write_test.log"
 
 SOURCE_LOG="$ROOT_DIR/results/logs/source_openfoam.log"
 set +e
@@ -64,4 +73,3 @@ tail -n 30 results/logs/icoFoam.log
 
 find results figures -maxdepth 4 -type f | sort
 echo "END_OPENFOAM_RUN"
-
