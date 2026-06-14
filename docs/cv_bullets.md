@@ -1,16 +1,7 @@
-# Conservative Resume Bullets
+# Resume Bullets
 
-## Before successful OpenFOAM reproduction
+After successful OpenFOAM reproduction, use these bullets only when the GitHub Actions reproduction has succeeded or when the generated `results/` and `figures/` outputs are present. Before successful OpenFOAM reproduction, do not use these result-backed bullets.
 
-- Prepared a reproducible OpenFOAM lid-driven cavity case setup for incompressible laminar flow at `Re = 100`, including `20 x 20` and `40 x 40` mesh dictionaries, boundary-condition, physical-property, and solver-control files.
-- Added Bash workflow scripts for mesh generation, solver execution, log capture, cleanup, and local post-processing in an OpenFOAM-enabled environment.
-- Implemented Python utilities and tests for parsing `icoFoam` residual logs and deriving centerline CSV/plot artifacts from final-time OpenFOAM field output after a real run.
-- Documented governing equations, Reynolds-number setup, solver choices, reproduction commands, output expectations, and limitations without including fabricated CFD results.
-
-## After successful OpenFOAM reproduction
-
-Supported by the copied GitHub Actions artifact currently present under `results/` and `figures/`.
-
-- Reproduced the `Re = 100` lid-driven cavity case in GitHub Actions with OpenFOAM 11 `icoFoam`; retained `blockMesh`, `checkMesh`, and `icoFoam` logs showing mesh generation, `Mesh OK`, and solver completion at `Time = 5s`.
-- Produced artifact-backed residual and centerline post-processing outputs: `results/residuals.csv`, `results/centerline_u.csv`, `results/centerline_v.csv`, `figures/cavity_residuals.png`, and `figures/cavity_centerline_profiles.png`.
-- Included a velocity-magnitude visualization, `figures/cavity_velocity_magnitude.png`, generated from the reproduced cavity field output.
+- Built a reproducible OpenFOAM 11 mini-project for a `Re = 100` lid-driven cavity, including `blockMesh` mesh generation, `checkMesh` quality inspection, `physicalProperties`, boundary-condition dictionaries, `fvSchemes` / `fvSolution`, and `icoFoam` solver execution.
+- Implemented GitHub Actions reproduction with an OpenFOAM Docker image; the workflow runs `blockMesh`, `checkMesh`, `icoFoam`, validates required outputs, and stores solver logs, CSV summaries, and figures as artifacts.
+- Wrote Python post-processing utilities to parse `icoFoam` residuals and extract nearest-cell centerline velocity profiles from final-time OpenFOAM field output, generating residual curves, centerline plots, and velocity-magnitude visualization.
