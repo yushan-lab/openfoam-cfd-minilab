@@ -41,15 +41,19 @@ jobs:
       - name: Run OpenFOAM solver in Docker
         run: |
           mkdir -p results/logs figures
-          set -o pipefail
+          set -euo pipefail
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -e HOME=/tmp \
             -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
+            --entrypoint /bin/bash \
             openfoam/openfoam11-paraview510:11 \
-            /bin/bash -lc '
+            -lc '
               set -euo pipefail
+              echo "BEGIN_OPENFOAM_RUN"
+              pwd
+              ls -la
               if [ -f /opt/openfoam11/etc/bashrc ]; then
                 source /opt/openfoam11/etc/bashrc
               elif [ -f /usr/lib/openfoam/openfoam11/etc/bashrc ]; then
@@ -60,19 +64,34 @@ jobs:
                 echo "Could not locate OpenFOAM 11 bashrc inside the Docker image." >&2
                 exit 1
               fi
+              echo "WM_PROJECT_DIR=${WM_PROJECT_DIR:-unset}"
+              which blockMesh
+              which checkMesh
+              which icoFoam
               MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
               test -s results/logs/blockMesh.log
               test -s results/logs/checkMesh.log
               test -s results/logs/icoFoam.log
+              echo "END_OPENFOAM_RUN"
             ' 2>&1 | tee results/logs/docker_openfoam.log
+
+      - name: Verify Docker OpenFOAM execution markers and solver logs
+        if: always()
+        run: |
+          set -euo pipefail
+          grep -q "BEGIN_OPENFOAM_RUN" results/logs/docker_openfoam.log
+          grep -q "END_OPENFOAM_RUN" results/logs/docker_openfoam.log
+          test -s results/logs/blockMesh.log
+          test -s results/logs/checkMesh.log
+          test -s results/logs/icoFoam.log
 
       - name: Diagnose files after Docker run
         if: always()
         run: |
           pwd
           ls -la
-          find . -maxdepth 5 -type f | sort
-          ls -la results results/logs figures 2>/dev/null || true
+          find . -maxdepth 6 -type f | sort
+          ls -la results results/logs figures || true
 
       - name: Generate plots and CSV summaries on host
         run: |

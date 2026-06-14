@@ -176,6 +176,15 @@ def test_github_actions_reproduction_workflow_contract():
     assert "Prepare diagnostic output directories" in workflow
     assert "results/logs/workflow_debug.log" in workflow
     assert "openfoam/openfoam11-paraview510:11" in workflow
+    assert "--entrypoint /bin/bash" in workflow
+    assert "BEGIN_OPENFOAM_RUN" in workflow
+    assert "END_OPENFOAM_RUN" in workflow
+    assert "WM_PROJECT_DIR=${WM_PROJECT_DIR:-unset}" in workflow
+    assert "which blockMesh" in workflow
+    assert "which checkMesh" in workflow
+    assert "which icoFoam" in workflow
+    assert 'grep -q "BEGIN_OPENFOAM_RUN" results/logs/docker_openfoam.log' in workflow
+    assert 'grep -q "END_OPENFOAM_RUN" results/logs/docker_openfoam.log' in workflow
     assert "test -s results/logs/blockMesh.log" in workflow
     assert "test -s results/logs/checkMesh.log" in workflow
     assert "test -s results/logs/icoFoam.log" in workflow
@@ -185,8 +194,8 @@ def test_github_actions_reproduction_workflow_contract():
     assert "Diagnose files after Docker run" in workflow
     assert "if: always()" in workflow
     assert "pwd" in workflow
-    assert "find . -maxdepth 5 -type f | sort" in workflow
-    assert "ls -la results results/logs figures" in workflow
+    assert "find . -maxdepth 6 -type f | sort" in workflow
+    assert "ls -la results results/logs figures || true" in workflow
     assert "python scripts/plot_residuals.py" in workflow
     assert "python scripts/postprocess_cavity.py" in workflow
     assert "python scripts/check_outputs.py" in workflow
