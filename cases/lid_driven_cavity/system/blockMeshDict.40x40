@@ -1,0 +1,87 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| OpenFOAM: 2D unit-square lid-driven cavity mesh, 40 x 40                  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+convertToMeters 1;
+
+vertices
+(
+    (0 0 -0.005)
+    (1 0 -0.005)
+    (1 1 -0.005)
+    (0 1 -0.005)
+    (0 0  0.005)
+    (1 0  0.005)
+    (1 1  0.005)
+    (0 1  0.005)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (40 40 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    bottom
+    {
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+        );
+    }
+
+    right
+    {
+        type wall;
+        faces
+        (
+            (1 2 6 5)
+        );
+    }
+
+    top
+    {
+        type wall;
+        faces
+        (
+            (2 3 7 6)
+        );
+    }
+
+    left
+    {
+        type wall;
+        faces
+        (
+            (3 0 4 7)
+        );
+    }
+
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+

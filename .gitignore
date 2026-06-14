@@ -1,0 +1,12 @@
+# OpenFOAM generated mesh, time directories, and conversion outputs.
+cases/lid_driven_cavity/constant/polyMesh/
+cases/lid_driven_cavity/processor*/
+cases/lid_driven_cavity/postProcessing/
+cases/lid_driven_cavity/VTK/
+cases/lid_driven_cavity/[1-9]*/
+cases/lid_driven_cavity/[0-9]*.[0-9]*/
+
+# Python caches.
+__pycache__/
+.pytest_cache/
+.pytest_tmp/

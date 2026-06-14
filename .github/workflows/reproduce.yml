@@ -1,0 +1,77 @@
+name: Reproduce OpenFOAM Lid-Driven Cavity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest matplotlib numpy
+
+      - name: Run Python tests on host
+        run: python -m pytest tests/test_cavity_repository.py -q --basetemp .pytest_tmp
+
+      - name: Run bash syntax checks
+        run: |
+          bash -n scripts/run_cavity.sh
+          bash -n scripts/clean_case.sh
+
+      - name: Run OpenFOAM solver in Docker
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            openfoam/openfoam11-paraview510:11 \
+            /bin/bash -lc '
+              set -euo pipefail
+              if [ -f /opt/openfoam11/etc/bashrc ]; then
+                source /opt/openfoam11/etc/bashrc
+              elif [ -f /usr/lib/openfoam/openfoam11/etc/bashrc ]; then
+                source /usr/lib/openfoam/openfoam11/etc/bashrc
+              elif [ -n "${WM_PROJECT_DIR:-}" ]; then
+                true
+              else
+                echo "Could not locate OpenFOAM 11 bashrc inside the Docker image." >&2
+                exit 1
+              fi
+              MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
+            '
+
+      - name: Generate plots and CSV summaries on host
+        run: |
+          python scripts/plot_residuals.py \
+            --log results/logs/icoFoam.log \
+            --output figures/cavity_residuals.png \
+            --csv results/residuals.csv
+          python scripts/postprocess_cavity.py \
+            --case cases/lid_driven_cavity \
+            --results results \
+            --figures figures
+
+      - name: Check required outputs
+        run: python scripts/check_outputs.py
+
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openfoam-cavity-results
+          path: |
+            results/
+            figures/
+

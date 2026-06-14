@@ -1,0 +1,18 @@
+* text=auto
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+*.md text eol=lf
+*.Dict text eol=lf
+blockMeshDict text eol=lf
+controlDict text eol=lf
+fvSchemes text eol=lf
+fvSolution text eol=lf
+transportProperties text eol=lf
+*.csv text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
