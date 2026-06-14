@@ -55,7 +55,35 @@ if ! command -v blockMesh >/dev/null 2>&1 \
     exit 1
 fi
 
+set +e
 MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
+RUN_STATUS=$?
+set -e
+
+echo "run_cavity.sh exit status: $RUN_STATUS"
+
+for f in \
+    results/logs/blockMesh.log \
+    results/logs/checkMesh.log \
+    results/logs/icoFoam.log \
+    results/logs/postProcess_sample.log \
+    results/logs/foamToVTK.log \
+    results/logs/foamToVTK_skipped.log \
+    results/logs/python_postprocess_skipped.log; do
+    if [ -f "$f" ]; then
+        echo "===== tail: $f ====="
+        tail -n 80 "$f" || true
+    else
+        echo "Missing log: $f"
+    fi
+done
+
+find results figures -maxdepth 4 -type f | sort
+
+if [ "$RUN_STATUS" -ne 0 ]; then
+    echo "run_cavity.sh failed; see log tails above." >&2
+    exit "$RUN_STATUS"
+fi
 
 for log_file in \
     results/logs/blockMesh.log \
@@ -66,10 +94,6 @@ for log_file in \
         exit 1
     fi
 done
-
-tail -n 30 results/logs/blockMesh.log
-tail -n 30 results/logs/checkMesh.log
-tail -n 30 results/logs/icoFoam.log
 
 find results figures -maxdepth 4 -type f | sort
 echo "END_OPENFOAM_RUN"

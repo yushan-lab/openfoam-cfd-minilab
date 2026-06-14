@@ -24,6 +24,7 @@ def test_required_repository_layout_exists():
         "Makefile",
         "cases/lid_driven_cavity/0/U",
         "cases/lid_driven_cavity/0/p",
+        "cases/lid_driven_cavity/constant/physicalProperties",
         "cases/lid_driven_cavity/constant/transportProperties",
         "cases/lid_driven_cavity/system/blockMeshDict",
         "cases/lid_driven_cavity/system/blockMeshDict.20x20",
@@ -68,6 +69,17 @@ def test_case_files_encode_re100_lid_driven_cavity_setup():
     assert "(40 40 1)" in mesh_40
     assert "frontAndBack" in mesh
     assert "type empty;" in mesh
+
+
+def test_openfoam11_physical_properties_file_declares_re100_viscosity():
+    physical_path = ROOT / "cases/lid_driven_cavity/constant/physicalProperties"
+
+    assert physical_path.exists()
+
+    physical = physical_path.read_text()
+
+    assert "object      physicalProperties;" in physical
+    assert "nu              [0 2 -1 0 0 0 0] 0.01;" in physical
 
 
 def test_plot_residuals_parser_extracts_icofoam_initial_residuals():
@@ -240,10 +252,24 @@ def test_ci_openfoam_container_script_contract():
     assert "command -v icoFoam || true" in script
     assert "command -v postProcess || true" in script
     assert "OpenFOAM commands are not available after sourcing bashrc." in script
+    assert "set +e\nMESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh\nRUN_STATUS=$?\nset -e" in script
+    assert 'echo "run_cavity.sh exit status: $RUN_STATUS"' in script
+    assert "results/logs/postProcess_sample.log" in script
+    assert "results/logs/foamToVTK.log" in script
+    assert "results/logs/foamToVTK_skipped.log" in script
+    assert "results/logs/python_postprocess_skipped.log" in script
+    assert 'echo "===== tail: $f ====="' in script
+    assert 'tail -n 80 "$f" || true' in script
+    assert 'echo "Missing log: $f"' in script
+    assert 'if [ "$RUN_STATUS" -ne 0 ]; then' in script
+    assert 'echo "run_cavity.sh failed; see log tails above." >&2' in script
+    assert 'exit "$RUN_STATUS"' in script
     assert "MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh" in script
-    assert "tail -n 30 results/logs/blockMesh.log" in script
-    assert "tail -n 30 results/logs/checkMesh.log" in script
-    assert "tail -n 30 results/logs/icoFoam.log" in script
+    assert "tail -n 30 results/logs/blockMesh.log" not in script
+    assert "tail -n 30 results/logs/checkMesh.log" not in script
+    assert "tail -n 30 results/logs/icoFoam.log" not in script
+    assert script.index('if [ "$RUN_STATUS" -ne 0 ]; then') < script.index("for log_file in")
+    assert script.index("for log_file in") < script.index('echo "END_OPENFOAM_RUN"')
     assert "find results figures -maxdepth 4 -type f | sort" in script
     assert 'echo "END_OPENFOAM_RUN"' in script
 
@@ -301,9 +327,13 @@ def test_docs_describe_cloud_reproduction_and_cv_bullet_gating():
 
     assert "Cloud reproduction with GitHub Actions" in readme
     assert "OpenFOAM Docker image" in readme
+    assert "OpenFOAM 11" in readme
+    assert "physicalProperties" in readme
     assert "openfoam-cavity-results" in readme
     assert "case setup" in readme.lower()
     assert "executed solver results" in readme.lower()
+    assert "transportProperties is the only" not in readme
+    assert "only required viscosity file" not in readme.lower()
     assert "Before successful OpenFOAM reproduction" in cv_text
     assert "After successful OpenFOAM reproduction" in cv_text
 
