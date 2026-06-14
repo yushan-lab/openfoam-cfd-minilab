@@ -10,3 +10,8 @@ cases/lid_driven_cavity/[0-9]*.[0-9]*/
 __pycache__/
 .pytest_cache/
 .pytest_tmp/
+
+# Internal workflow diagnostic logs.
+results/logs/docker_openfoam.log
+results/logs/source_openfoam.log
+results/logs/workflow_debug.log

@@ -1,54 +1,97 @@
 # Method Notes
 
-This mini-lab is set up to show a conventional OpenFOAM workflow for a laminar incompressible lid-driven cavity. The files in `cases/lid_driven_cavity/` define the setup. Solver-derived outputs are generated only by running the scripts in an OpenFOAM-enabled shell.
+This mini-lab documents a conventional OpenFOAM workflow for a laminar incompressible lid-driven cavity at `Re = 100`. The case files define the mesh, fields, physical properties, numerical schemes, solver controls, and post-processing workflow.
 
-## Workflow
+## Workflow Overview
 
-1. `blockMesh`
+The main workflow is:
 
-   Reads `system/blockMeshDict` and creates the structured hexahedral mesh under `constant/polyMesh/`. The repository includes `system/blockMeshDict.20x20` and `system/blockMeshDict.40x40`; `scripts/run_cavity.sh` copies the selected dictionary to `system/blockMeshDict` before running `blockMesh`. Both meshes use a thin 3D slab with `empty` front/back patches, making the calculation effectively 2D.
+1. Select a structured mesh dictionary.
+2. Generate the mesh with `blockMesh`.
+3. Inspect mesh quality with `checkMesh`.
+4. Run the transient incompressible solver with `icoFoam`.
+5. Parse residual histories from the solver log.
+6. Post-process final-time velocity fields with Python.
+7. Write centerline CSV files and figures.
 
-2. Boundary and initial fields
+## Mesh Generation
 
-   The `0/U` file sets an initially stationary velocity field, a moving top lid with `U = (1 0 0)`, no-slip side/bottom walls, and `empty` front/back patches. The `0/p` file sets kinematic pressure with `zeroGradient` wall boundaries.
+`system/blockMeshDict` defines a thin 3D slab representation of the unit-square cavity. The front and back patches use the OpenFOAM `empty` type so the simulation is effectively two-dimensional.
 
-3. Physical properties
+The repository includes two selectable mesh dictionaries:
 
-   `constant/physicalProperties` defines the OpenFOAM Foundation v11 kinematic viscosity with `nu = 0.01`. The older `constant/transportProperties` file is retained for compatibility with variants that still read it. With `U = 1` and `L = 1`, this gives `Re = 100`.
+- `system/blockMeshDict.20x20`
+- `system/blockMeshDict.40x40`
 
-4. `fvSchemes`
+`scripts/run_cavity.sh` copies the selected dictionary to `system/blockMeshDict` before running `blockMesh`.
 
-   `system/fvSchemes` selects finite-volume discretization schemes: Euler time stepping, linear interpolation, Gauss linear gradients, and corrected Laplacians/snGrad terms.
+## Boundary and Initial Fields
 
-5. `fvSolution`
+The `0/U` file initializes the velocity field and defines the moving lid:
 
-   `system/fvSolution` defines linear solvers and PISO controls for `icoFoam`. It also supplies a pressure reference through `pRefCell 0` and `pRefValue 0`.
+- `top`: moving wall with `U = (1 0 0)`.
+- `bottom`, `left`, `right`: no-slip walls.
+- `frontAndBack`: `empty`.
 
-6. `controlDict`
+The `0/p` file defines kinematic pressure with `zeroGradient` wall boundaries and `empty` front/back boundaries.
 
-   `system/controlDict` selects `icoFoam`, sets `deltaT = 0.005`, runs to `endTime = 5`, writes every 100 time steps, and keeps only the two latest time directories via `purgeWrite 2`.
+## Physical Properties
 
-7. Residual logs
+OpenFOAM Foundation v11 reads `constant/physicalProperties`, which defines:
 
-   `scripts/run_cavity.sh` redirects solver output to `results/logs/icoFoam.log`. `scripts/plot_residuals.py` parses `Initial residual` lines from that log and can write `results/residuals.csv` plus `figures/cavity_residuals.png`.
+```text
+nu [0 2 -1 0 0 0 0] 0.01
+```
 
-8. Centerline extraction
+With `U = 1` and `L = 1`, this gives:
 
-   OpenFOAM Foundation v11 in the CI container does not require the legacy `sample` command for this project. After `icoFoam`, Python post-processing reads the final-time OpenFOAM `U` volVectorField directly. If the best-effort `writeCellCentres` function creates a final-time `C` field, the Python script uses those cell centres. Otherwise, it reconstructs the structured cell centres from `system/blockMeshDict`.
+```text
+Re = U L / nu = 100
+```
 
-   The centerline CSVs use nearest-cell extraction:
+`constant/transportProperties` is retained for compatibility with OpenFOAM variants that still read it.
 
-   - vertical profile: nearest cell values to `x = 0.5`, written as `y,Ux`
-   - horizontal profile: nearest cell values to `y = 0.5`, written as `x,Uy`
+## Solver Configuration
 
-   This produces `results/centerline_u.csv`, `results/centerline_v.csv`, and `figures/cavity_centerline_profiles.png` from final-time OpenFOAM field output without fabricating or hard-coding profile values.
+`system/controlDict` selects `icoFoam`, sets `deltaT = 0.005`, runs to `endTime = 5`, writes every 100 time steps, and keeps only the two latest time directories.
 
-9. Field visualization
+`system/fvSchemes` specifies finite-volume discretization schemes for the transient laminar solve.
 
-   `scripts/postprocess_cavity.py` also uses the final-time cell-centred `U` values to generate `figures/cavity_velocity_magnitude.png`. `foamToVTK` remains a best-effort optional export for local inspection, and ParaView remains the recommended tool for detailed visual review.
+`system/fvSolution` defines linear solvers, PISO controls, and the pressure reference:
+
+```text
+pRefCell 0
+pRefValue 0
+```
+
+## Residual Parsing
+
+`scripts/run_cavity.sh` writes solver output to `results/logs/icoFoam.log`.
+
+`scripts/plot_residuals.py` parses `Initial residual` entries from that log and writes:
+
+- `results/residuals.csv`
+- `figures/cavity_residuals.png`
+
+## Centerline Extraction
+
+`scripts/postprocess_cavity.py` reads final-time OpenFOAM velocity fields. If the `C` cell-center field is available from `writeCellCentres`, it uses that field. Otherwise, it reconstructs structured cell centers from `system/blockMeshDict`.
+
+The centerline CSVs are computed from final-time OpenFOAM field output:
+
+- `results/centerline_u.csv`: nearest-cell values to `x = 0.5`, written as `y,Ux`.
+- `results/centerline_v.csv`: nearest-cell values to `y = 0.5`, written as `x,Uy`.
+
+The profiles are diagnostic outputs for this workflow and are not a reference-data validation study.
+
+## Field Visualization
+
+`scripts/postprocess_cavity.py` generates `figures/cavity_velocity_magnitude.png` from final-time cell-centered velocity values.
+
+`foamToVTK` is used as a best-effort optional export path for local field inspection. ParaView is recommended for richer visualization of OpenFOAM fields.
 
 ## Reproducibility Notes
 
-- Generated OpenFOAM mesh/time directories are ignored by git.
-- Results and figures should be committed only when they come from an actual solver run.
-- The current repository setup has tests for required files, Re=100 parameters, residual parsing, final-field centerline extraction, output checking, and conservative CV bullets.
+- Generated mesh and time directories are ignored by git because they can be regenerated.
+- The required solver logs, CSV summaries, and figures are checked by `scripts/check_outputs.py`.
+- The GitHub Actions workflow runs the OpenFOAM solver stage in a Docker image and performs Python post-processing on the runner.
