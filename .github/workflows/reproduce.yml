@@ -11,6 +11,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Prepare diagnostic output directories
+        run: |
+          mkdir -p results/logs figures
+          {
+            echo "GitHub Actions OpenFOAM reproduction workflow started."
+            date -u
+            pwd
+          } > results/logs/workflow_debug.log
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -31,6 +40,8 @@ jobs:
 
       - name: Run OpenFOAM solver in Docker
         run: |
+          mkdir -p results/logs figures
+          set -o pipefail
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -e HOME=/tmp \
@@ -50,7 +61,18 @@ jobs:
                 exit 1
               fi
               MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
-            '
+              test -s results/logs/blockMesh.log
+              test -s results/logs/checkMesh.log
+              test -s results/logs/icoFoam.log
+            ' 2>&1 | tee results/logs/docker_openfoam.log
+
+      - name: Diagnose files after Docker run
+        if: always()
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 5 -type f | sort
+          ls -la results results/logs figures 2>/dev/null || true
 
       - name: Generate plots and CSV summaries on host
         run: |
@@ -74,4 +96,3 @@ jobs:
           path: |
             results/
             figures/
-

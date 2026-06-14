@@ -12,6 +12,28 @@ RUN_PYTHON_POSTPROCESS="${RUN_PYTHON_POSTPROCESS:-1}"
 
 mkdir -p "$LOG_DIR" "$FIGURE_DIR" "$RESULT_DIR"
 
+print_file_summary() {
+    echo ""
+    echo "Result and figure file summary:"
+    find "$ROOT_DIR/results" "$ROOT_DIR/figures" -maxdepth 3 -type f | sort
+}
+
+verify_nonempty_file() {
+    local path="$1"
+    if [ ! -s "$path" ]; then
+        echo "Required solver log is missing or empty: $path" >&2
+        return 1
+    fi
+}
+
+verify_solver_logs() {
+    verify_nonempty_file "$LOG_DIR/blockMesh.log"
+    verify_nonempty_file "$LOG_DIR/checkMesh.log"
+    verify_nonempty_file "$LOG_DIR/icoFoam.log"
+}
+
+trap print_file_summary EXIT
+
 if [ ! -f "$MESH_DICT" ]; then
     echo "Unsupported MESH_RESOLUTION=$MESH_RESOLUTION. Expected 20 or 40." >&2
     exit 2
@@ -60,6 +82,7 @@ cd "$CASE_DIR"
 blockMesh > "$LOG_DIR/blockMesh.log" 2>&1
 checkMesh > "$LOG_DIR/checkMesh.log" 2>&1
 icoFoam > "$LOG_DIR/icoFoam.log" 2>&1
+verify_solver_logs
 
 if ! postProcess -func sample -latestTime > "$LOG_DIR/postProcess_sample.log" 2>&1; then
     {
@@ -75,6 +98,8 @@ if command -v foamToVTK >/dev/null 2>&1; then
 else
     echo "foamToVTK not found; skipping optional VTK field export." > "$LOG_DIR/foamToVTK_skipped.log"
 fi
+
+verify_solver_logs
 
 if [ "$RUN_PYTHON_POSTPROCESS" = "0" ]; then
     echo "Skipping Python post-processing because RUN_PYTHON_POSTPROCESS=0." > "$LOG_DIR/python_postprocess_skipped.log"

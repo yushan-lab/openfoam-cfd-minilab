@@ -7,6 +7,7 @@ import argparse
 import csv
 from pathlib import Path
 import re
+import sys
 
 
 TIME_RE = re.compile(r"^Time = ([0-9.+\-eE]+)")
@@ -73,12 +74,31 @@ def plot_residuals(path: Path, series: dict[str, list[tuple[float, float]]]) -> 
     plt.close(fig)
 
 
+def describe_missing_log(path: Path) -> str:
+    lines = [f"Missing residual log: {path}"]
+    log_dir = path.parent
+    if log_dir.exists():
+        files = sorted(item for item in log_dir.rglob("*") if item.is_file())
+        lines.append(f"Files currently under {log_dir}:")
+        if files:
+            lines.extend(f"  - {item}" for item in files)
+        else:
+            lines.append("  (no files found)")
+    else:
+        lines.append(f"Log directory does not exist: {log_dir}")
+    return "\n".join(lines)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--log", type=Path, default=Path("results/logs/icoFoam.log"))
     parser.add_argument("--output", type=Path, default=Path("figures/cavity_residuals.png"))
     parser.add_argument("--csv", type=Path, default=None)
     args = parser.parse_args()
+
+    if not args.log.exists():
+        print(describe_missing_log(args.log), file=sys.stderr)
+        return 1
 
     log_text = args.log.read_text()
     series = parse_residuals(log_text)
@@ -96,4 +116,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

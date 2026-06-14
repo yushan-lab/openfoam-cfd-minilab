@@ -1,5 +1,6 @@
 from pathlib import Path
 import importlib.util
+import subprocess
 import sys
 
 
@@ -172,14 +173,69 @@ def test_github_actions_reproduction_workflow_contract():
     assert "runs-on: ubuntu-latest" in workflow
     assert "actions/checkout@v4" in workflow
     assert "actions/setup-python@v5" in workflow
+    assert "Prepare diagnostic output directories" in workflow
+    assert "results/logs/workflow_debug.log" in workflow
     assert "openfoam/openfoam11-paraview510:11" in workflow
+    assert "test -s results/logs/blockMesh.log" in workflow
+    assert "test -s results/logs/checkMesh.log" in workflow
+    assert "test -s results/logs/icoFoam.log" in workflow
     assert "python -m pytest tests/test_cavity_repository.py -q --basetemp .pytest_tmp" in workflow
     assert "bash -n scripts/run_cavity.sh" in workflow
     assert "RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh" in workflow
+    assert "Diagnose files after Docker run" in workflow
+    assert "if: always()" in workflow
+    assert "pwd" in workflow
+    assert "find . -maxdepth 5 -type f | sort" in workflow
+    assert "ls -la results results/logs figures" in workflow
     assert "python scripts/plot_residuals.py" in workflow
     assert "python scripts/postprocess_cavity.py" in workflow
     assert "python scripts/check_outputs.py" in workflow
     assert "openfoam-cavity-results" in workflow
+
+
+def test_run_script_verifies_solver_logs_before_postprocessing():
+    script = (ROOT / "scripts/run_cavity.sh").read_text()
+    python_skip_index = script.index('if [ "$RUN_PYTHON_POSTPROCESS" = "0" ]')
+
+    assert 'LOG_DIR="$ROOT_DIR/results/logs"' in script
+    assert 'RESULT_DIR="$ROOT_DIR/results"' in script
+    assert 'FIGURE_DIR="$ROOT_DIR/figures"' in script
+    assert 'mkdir -p "$LOG_DIR" "$FIGURE_DIR" "$RESULT_DIR"' in script
+    assert "verify_solver_logs" in script
+    assert 'verify_nonempty_file "$LOG_DIR/blockMesh.log"' in script
+    assert 'verify_nonempty_file "$LOG_DIR/checkMesh.log"' in script
+    assert 'verify_nonempty_file "$LOG_DIR/icoFoam.log"' in script
+    assert '\nverify_solver_logs\n\nif [ "$RUN_PYTHON_POSTPROCESS" = "0" ]' in script
+    assert 'find "$ROOT_DIR/results" "$ROOT_DIR/figures" -maxdepth 3 -type f | sort' in script
+
+
+def test_plot_residuals_reports_missing_log_with_directory_listing(tmp_path):
+    log_dir = tmp_path / "results" / "logs"
+    log_dir.mkdir(parents=True)
+    (log_dir / "blockMesh.log").write_text("block mesh log\n")
+    missing_log = log_dir / "icoFoam.log"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/plot_residuals.py"),
+            "--log",
+            str(missing_log),
+            "--output",
+            str(tmp_path / "figures" / "cavity_residuals.png"),
+        ],
+        cwd=tmp_path,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    combined_output = completed.stdout + completed.stderr
+    assert completed.returncode != 0
+    assert f"Missing residual log: {missing_log}" in combined_output
+    assert "Files currently under" in combined_output
+    assert "blockMesh.log" in combined_output
+    assert "Traceback" not in combined_output
 
 
 def test_docs_describe_cloud_reproduction_and_cv_bullet_gating():
