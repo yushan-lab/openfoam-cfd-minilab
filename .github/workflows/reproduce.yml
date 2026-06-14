@@ -37,43 +37,19 @@ jobs:
         run: |
           bash -n scripts/run_cavity.sh
           bash -n scripts/clean_case.sh
+          bash -n scripts/ci_run_openfoam_in_container.sh
 
       - name: Run OpenFOAM solver in Docker
         run: |
-          mkdir -p results/logs figures
-          set -euo pipefail
+          mkdir -p results/logs figures results
+          set -o pipefail
           docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -e HOME=/tmp \
             -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
             --entrypoint /bin/bash \
             openfoam/openfoam11-paraview510:11 \
-            -lc '
-              set -eo pipefail
-              echo "BEGIN_OPENFOAM_RUN"
-              pwd
-              ls -la
-              if [ -f /opt/openfoam11/etc/bashrc ]; then
-                source /opt/openfoam11/etc/bashrc
-              elif [ -f /usr/lib/openfoam/openfoam11/etc/bashrc ]; then
-                source /usr/lib/openfoam/openfoam11/etc/bashrc
-              elif [ -n "${WM_PROJECT_DIR:-}" ]; then
-                true
-              else
-                echo "Could not locate OpenFOAM 11 bashrc inside the Docker image." >&2
-                exit 1
-              fi
-              echo "WM_PROJECT_DIR=${WM_PROJECT_DIR:-unset}"
-              command -v blockMesh
-              command -v checkMesh
-              command -v icoFoam
-              MESH_RESOLUTION=40 RUN_PYTHON_POSTPROCESS=0 bash scripts/run_cavity.sh
-              test -s results/logs/blockMesh.log
-              test -s results/logs/checkMesh.log
-              test -s results/logs/icoFoam.log
-              echo "END_OPENFOAM_RUN"
-            ' 2>&1 | tee results/logs/docker_openfoam.log
+            -lc 'bash scripts/ci_run_openfoam_in_container.sh' \
+            2>&1 | tee results/logs/docker_openfoam.log
 
       - name: Verify Docker OpenFOAM execution markers and solver logs
         if: always()
