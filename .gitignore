@@ -6,6 +6,15 @@ cases/lid_driven_cavity/VTK/
 cases/lid_driven_cavity/[1-9]*/
 cases/lid_driven_cavity/[0-9]*.[0-9]*/
 runs/
+!cases/rans_pitzdaily/
+cases/rans_pitzdaily/**/constant/polyMesh/
+cases/rans_pitzdaily/**/processor*/
+cases/rans_pitzdaily/**/postProcessing/
+cases/rans_pitzdaily/**/VTK/
+cases/rans_pitzdaily/**/[1-9]*/
+cases/rans_pitzdaily/**/[0-9]*.[0-9]*/
+runs/rans_pitzdaily_smoke/
+runs/rans_pitzdaily/
 results/public/**/logs/
 results/public/**/postProcessing/
 results/public/**/VTK/

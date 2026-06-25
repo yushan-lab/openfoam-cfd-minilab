@@ -1,0 +1,61 @@
+{
+  "copied_at_utc": "2026-06-25T17:37:32Z",
+  "copied_files": {
+    "base/0/U": "incompressible/simpleFoam/pitzDaily/0/U",
+    "base/0/p": "incompressible/simpleFoam/pitzDaily/0/p",
+    "base/constant/physicalProperties": "incompressible/simpleFoam/pitzDaily/constant/physicalProperties",
+    "base/system/blockMeshDict": "resources/blockMesh/pitzDaily",
+    "base/system/controlDict": "incompressible/simpleFoam/pitzDaily/system/controlDict (model-neutralized functions removed)",
+    "base/system/fvSchemes": "incompressible/simpleFoam/pitzDaily/system/fvSchemes",
+    "base/system/fvSolution": "incompressible/simpleFoam/pitzDaily/system/fvSolution",
+    "models/kEpsilon/0/epsilon": "incompressible/simpleFoam/pitzDaily/0/epsilon",
+    "models/kEpsilon/0/k": "incompressible/simpleFoam/pitzDaily/0/k",
+    "models/kEpsilon/0/nut": "incompressible/simpleFoam/pitzDaily/0/nut",
+    "models/kEpsilon/constant/momentumTransport": "incompressible/simpleFoam/pitzDaily/constant/momentumTransport",
+    "models/kOmegaSST/0/k": "incompressible/simpleFoam/pitzDaily/0/k",
+    "models/kOmegaSST/0/nut": "incompressible/simpleFoam/pitzDaily/0/nut",
+    "models/kOmegaSST/0/omega": "incompressible/simpleFoam/pitzDaily/0/omega",
+    "models/kOmegaSST/constant/momentumTransport": "incompressible/simpleFoam/pitzDaily/constant/momentumTransport (model set to kOmegaSST)"
+  },
+  "generated_file_sha256": {
+    "base/0/U": "bb89c17cec69f406d6bb5c6cca62f0fa10ae3778dcebf654caedf6dad00d9686",
+    "base/0/p": "81bda4614600d0f524ceed08259bb764e20ba76553356433b47983be9a1c74f9",
+    "base/constant/physicalProperties": "37c58fb65555a2ba703a635528f43fc938607cef877038c6670feffca39239d0",
+    "base/system/blockMeshDict": "a65f0b17f491813044d33dd21aa3f82fd9277e7edebb41db071f0ac7bd1036f7",
+    "base/system/controlDict": "3cb8fe12e6ee912ad7d77a0f11c05d5db752adb0f78ce8a384fee461294d0b35",
+    "base/system/fvSchemes": "cf253d7b83eccae7426d51a626e5cd40801f2fcefc33bf1fd1279487e7bdc5da",
+    "base/system/fvSolution": "470badf52f292d751a98aef4fd785d1f0c5e654d39022d6c7f3f04ac6623424f",
+    "models/kEpsilon/0/epsilon": "11bde22fbb10dfe0a6b59e995694cbae429bbfa3d87aa5d059ad76b30bada2ef",
+    "models/kEpsilon/0/k": "328a3029f2e13bb319201705246deb212cafa8715b9977f7e27469429de81cce",
+    "models/kEpsilon/0/nut": "cfcf9033c73f7d4fe3972fddddf9081ea550b288aa9e8a7d8b6287ff8e52ea62",
+    "models/kEpsilon/constant/momentumTransport": "83326f5948b567a1c1248398fd8f0fdbbcd26755e1694a451e7dddb51d2eb2e6",
+    "models/kOmegaSST/0/k": "328a3029f2e13bb319201705246deb212cafa8715b9977f7e27469429de81cce",
+    "models/kOmegaSST/0/nut": "cfcf9033c73f7d4fe3972fddddf9081ea550b288aa9e8a7d8b6287ff8e52ea62",
+    "models/kOmegaSST/0/omega": "a29396ae4632d048bf976ecb3cddd5d222e7aee4f79dbdac2db821030e1d185e",
+    "models/kOmegaSST/constant/momentumTransport": "ed9a4865bf2b0ad488652d3ae35e19610074a0e1b78f7e8e2239dfc0d4b0abe6"
+  },
+  "official_allrun_sequence": [
+    "blockMesh -dict $FOAM_TUTORIALS/resources/blockMesh/pitzDaily",
+    "simpleFoam"
+  ],
+  "openfoam_distribution": "Foundation",
+  "openfoam_version": "10",
+  "source_file_sha256": {
+    "0/U": "bb89c17cec69f406d6bb5c6cca62f0fa10ae3778dcebf654caedf6dad00d9686",
+    "0/epsilon": "11bde22fbb10dfe0a6b59e995694cbae429bbfa3d87aa5d059ad76b30bada2ef",
+    "0/k": "328a3029f2e13bb319201705246deb212cafa8715b9977f7e27469429de81cce",
+    "0/nut": "cfcf9033c73f7d4fe3972fddddf9081ea550b288aa9e8a7d8b6287ff8e52ea62",
+    "0/omega": "a29396ae4632d048bf976ecb3cddd5d222e7aee4f79dbdac2db821030e1d185e",
+    "0/p": "81bda4614600d0f524ceed08259bb764e20ba76553356433b47983be9a1c74f9",
+    "Allrun": "d0591545798952b713849e32eaf66ee0e8b766c92b8caf8665b939fcc6b65548",
+    "constant/momentumTransport": "83326f5948b567a1c1248398fd8f0fdbbcd26755e1694a451e7dddb51d2eb2e6",
+    "constant/physicalProperties": "37c58fb65555a2ba703a635528f43fc938607cef877038c6670feffca39239d0",
+    "resources/blockMesh/pitzDaily": "a65f0b17f491813044d33dd21aa3f82fd9277e7edebb41db071f0ac7bd1036f7",
+    "system/blockMeshDict": "c4c7696119208866b3d2408aa53081df69c7a426d579eae3d30363d45b13b022",
+    "system/controlDict": "568d785e8361434314af0b1c28d065881a3bcaf25d919011671383d5141bc99d",
+    "system/fvSchemes": "cf253d7b83eccae7426d51a626e5cd40801f2fcefc33bf1fd1279487e7bdc5da",
+    "system/fvSolution": "470badf52f292d751a98aef4fd785d1f0c5e654d39022d6c7f3f04ac6623424f"
+  },
+  "source_git_or_package_version": "OpenFOAM-10 local package",
+  "tutorial_relative_path": "incompressible/simpleFoam/pitzDaily"
+}
