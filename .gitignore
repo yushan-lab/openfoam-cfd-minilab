@@ -5,6 +5,10 @@ cases/lid_driven_cavity/postProcessing/
 cases/lid_driven_cavity/VTK/
 cases/lid_driven_cavity/[1-9]*/
 cases/lid_driven_cavity/[0-9]*.[0-9]*/
+runs/
+results/public/**/logs/
+results/public/**/postProcessing/
+results/public/**/VTK/
 
 # Python caches.
 __pycache__/

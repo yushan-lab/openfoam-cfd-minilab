@@ -1,0 +1,5 @@
+resolution,status,courant_gate_passed,steady_gate_passed,exact_sample_gate_passed,quality_gate_passed,material_centerline_change,quality_gate_reasons
+20,completed,True,True,True,True,1.5913291241129517e-06,
+40,completed,True,True,True,True,1.5755355383342838e-06,
+80,completed,True,True,True,True,3.6401998778671387e-06,
+160,completed,True,True,True,True,7.73422268367114e-06,

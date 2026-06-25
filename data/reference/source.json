@@ -1,0 +1,25 @@
+{
+  "title": "High-Re Solutions for Incompressible Flow Using the Navier-Stokes Equations and a Multigrid Method",
+  "authors": [
+    "U. Ghia",
+    "K. N. Ghia",
+    "C. T. Shin"
+  ],
+  "year": 1982,
+  "journal": "Journal of Computational Physics",
+  "volume": "48",
+  "issue": "3",
+  "pages": "387-411",
+  "doi": "10.1016/0021-9991(82)90058-4",
+  "source_url": "https://doi.org/10.1016/0021-9991(82)90058-4",
+  "accessed": "2026-06-25",
+  "data_urls": {
+    "u": "https://gist.github.com/ivan-pi/3e9326d18a366ffe6a8e5bfda6353219/raw/3694c1ae997e670098fb1f186bee3bd122ab236f/ghiau.txt",
+    "v": "https://gist.github.com/ivan-pi/caa6c6737d36a9140fbcf2ea59c78b3c/raw/95e8a0f876c05d846775a10d2665828d5a99a7bb/ghiav.txt"
+  },
+  "table_notes": "Re=100 columns from Tables I and II: u velocity along the vertical centerline x=0.5 and v velocity along the horizontal centerline y=0.5.",
+  "checksum": {
+    "re100_centerline_u.csv": "sha256:c6a6b520f4c667f46aea3aa348c7d96aba4cbd20431d537976dc44a0d365d6fe",
+    "re100_centerline_v.csv": "sha256:8187cb2afbd1f7f74d2c49a0d60a66f1924d9010dbd22de7697e9baea36483d4"
+  }
+}

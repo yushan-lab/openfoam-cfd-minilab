@@ -20,7 +20,6 @@ def load_module(path: Path):
 def test_required_repository_layout_exists():
     required_paths = [
         "README.md",
-        "AGENTS.md",
         "Makefile",
         "cases/lid_driven_cavity/0/U",
         "cases/lid_driven_cavity/0/p",
@@ -43,7 +42,6 @@ def test_required_repository_layout_exists():
         "results/.gitkeep",
         "figures/.gitkeep",
         "docs/method_notes.md",
-        "docs/cv_bullets.md",
     ]
 
     missing = [path for path in required_paths if not (ROOT / path).exists()]
@@ -406,14 +404,43 @@ def test_plot_residuals_reports_missing_log_with_directory_listing():
         assert "Traceback" not in combined_output
 
 
-def test_docs_describe_cloud_reproduction_and_cv_bullet_gating():
+def test_docs_describe_public_validation_positioning():
     readme = (ROOT / "README.md").read_text()
-    cv_text = (ROOT / "docs/cv_bullets.md").read_text()
 
-    assert "Cloud reproduction with GitHub Actions" in readme
+    assert readme.startswith(
+        "# OpenFOAM CFD Validation Lab: Re=100 Lid-Driven Cavity Verification"
+    )
+    assert "controlled numerical validation study" in readme
+    assert "OpenFOAM-10" in readme
+    assert "OpenFOAM-11 GitHub Actions workflow is retained as a smoke reproduction path" in readme
+    assert "not a production CFD solver or an industrial validation campaign" in readme
+    assert "MiniLab" not in readme
+    assert "intentionally small" not in readme
+    assert "Cloud Reproduction with GitHub Actions" in readme
+    assert "Cloud smoke reproduction with GitHub Actions" in readme
+    assert "Validation V2 Results" in readme
+    assert "`runs/` contains the untracked full local solver fields and logs for validation-v2" in readme
+    assert "`results/public/` and `figures/` contain the lightweight public CSV summaries and figures exported from those runs" in readme
+    assert "centerline self-convergence" in readme
+    assert "not on the full two-dimensional velocity field" in readme
+    assert "not monotonic benchmark-error convergence" in readme
+    assert "All four grids pass the Courant, fixed-5 steady-state, solver-integrity, and exact-sampling quality gates." in readme
+    assert "centerline grid-to-grid differences continuously decrease" in readme
+    assert "observed centerline self-convergence order ranges from approximately `1.86` to `2.02`" in readme
+    assert "Ghia pointwise RMSE values are not strictly monotonic" in readme
+    assert "All four grid quality gates passed: `True`" not in readme
+    assert "The Ghia-reference RMSE values are not strictly monotonic: `False`" not in readme
+    assert "Smoke reproduction mesh: `40 x 40 x 1`" in readme
+    assert "Validation-v2 meshes: `20 x 20 x 1`, `40 x 40 x 1`, `80 x 80 x 1`, and `160 x 160 x 1`" in readme
+    assert "python scripts/run_cavity_validation_v2.py --overwrite --resolutions 20 40 80 160 --end-times 20 30 40 50 60 70 80" in readme
+    assert "python scripts/export_validation_v2_public.py" in readme
+    assert "`runs/cavity_validation_v2/` is not tracked by git" in readme
+    assert "`results/public/cavity_validation_v2/` and `figures/cavity_validation_v2/`" in readme
     assert "OpenFOAM Docker image" in readme
     assert "OpenFOAM 11" in readme
     assert "physicalProperties" in readme
+    assert "constant/physicalProperties` and `constant/transportProperties`" in readme
+    assert "The actual OpenFOAM version used for each validation run is recorded in run metadata" in readme
     assert "blockMesh/checkMesh/icoFoam" in readme
     assert "final-time OpenFOAM field output" in readme
     assert "openfoam-cavity-results" in readme
@@ -423,18 +450,45 @@ def test_docs_describe_cloud_reproduction_and_cv_bullet_gating():
     assert "only required viscosity file" not in readme.lower()
     assert "Run postProcess -func sample" not in readme
     assert "centerline profiles are generated only from OpenFOAM sample files" not in readme
-    assert "Before successful OpenFOAM reproduction" in cv_text
-    assert "After successful OpenFOAM reproduction" in cv_text
+    assert "Reference Data" in readme
+    assert "Ghia, Ghia & Shin (1982)" in readme
+    assert "Journal of Computational Physics 48(3), 387-411" in readme
+    assert "10.1016/0021-9991(82)90058-4" in readme
+    assert "data/reference/source.json" in readme
+    assert "not the full paper text" in readme
+    assert "The validation scope is limited to the two-dimensional laminar `Re = 100` lid-driven cavity and 17 centerline sample points per profile." in readme
+    assert "should not be extrapolated to turbulence, complex geometries, industrial meshes, or production CFD workflows" in readme
+    assert "The OpenFOAM-11 GitHub Actions workflow is a smoke reproduction for the base case; the full validation-v2 evidence comes from local OpenFOAM-10 runs." in readme
+    assert "not benchmark-grade validation" not in readme
+
+    method_notes = (ROOT / "docs/method_notes.md").read_text()
+    assert "The case includes both `constant/physicalProperties` and `constant/transportProperties`" in method_notes
+    assert "data/reference/source.json" in method_notes
+    assert "10.1016/0021-9991(82)90058-4" in method_notes
+    assert "`runs/` contains untracked full local solver fields and logs for validation-v2." in method_notes
+    assert "should not be extrapolated to turbulence, complex geometries, industrial meshes, or production CFD workflows" in method_notes
 
 
-def test_cv_bullets_do_not_claim_solver_execution_without_outputs():
-    cv_text = (ROOT / "docs/cv_bullets.md").read_text().lower()
-    forbidden_claims = [
-        "successfully ran",
-        "converged",
-        "generated residual",
-        "validated against",
-        "computed drag",
-    ]
+def test_validation_v2_public_exports_exist():
+    for path in [
+        ROOT / "results/public/cavity_validation_v2/validation_summary.csv",
+        ROOT / "results/public/cavity_validation_v2/self_convergence.csv",
+        ROOT / "results/public/cavity_validation_v2/quality_gates.csv",
+        ROOT / "results/public/cavity_validation_v2/manifest.csv",
+        ROOT / "figures/cavity_validation_v2/exact_centerline_vs_ghia.png",
+        ROOT / "figures/cavity_validation_v2/grid_to_grid_difference.png",
+        ROOT / "figures/cavity_validation_v2/observed_order.png",
+        ROOT / "figures/cavity_validation_v2/error_vs_cost.png",
+    ]:
+        assert path.is_file()
+        assert path.stat().st_size > 0
 
-    assert all(claim not in cv_text for claim in forbidden_claims)
+
+def test_public_manifest_uses_relative_run_ids_only():
+    manifest = (ROOT / "results/public/cavity_validation_v2/manifest.csv").read_text()
+
+    assert "run_id" in manifest.splitlines()[0]
+    for token in ["/mnt/", "D:\\", "C:\\", "yushan", "Users", "cache"]:
+        assert token not in manifest
+    for run_id in ["N20", "N40", "N80", "N160"]:
+        assert run_id in manifest
