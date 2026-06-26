@@ -1,0 +1,15 @@
+{
+  "U_exact_entry": 0.7,
+  "applied_to_models": [
+    "kEpsilon",
+    "kOmegaSST"
+  ],
+  "base_solver_profile": "conservative_common",
+  "canonical_snapshot_profile": "continuation_common",
+  "continuation_additional_iterations": 300,
+  "continuation_residual_control_disabled": true,
+  "equation_catch_all_regex": ".*",
+  "equation_catch_all_value": 0.5,
+  "openfoam_version": "10",
+  "profile": "conservative_common"
+}

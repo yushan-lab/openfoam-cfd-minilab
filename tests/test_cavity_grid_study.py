@@ -923,12 +923,18 @@ def test_export_validation_v2_public_copies_files_and_generates_readme_from_csv(
 
     readme_text = readme.read_text(encoding="utf-8")
     assert readme_text.startswith(
-        "# OpenFOAM CFD Validation Lab: Re=100 Lid-Driven Cavity Verification"
+        "# OpenFOAM CFD Validation Lab: Laminar Cavity Verification and Paired RANS Diagnostics"
     )
     assert "Validation V2 Results" in readme_text
-    assert "controlled numerical validation study" in readme_text
+    assert "two reproducible OpenFOAM CFD studies" in readme_text
+    assert "numerical validation and paired model diagnostics" in readme_text
+    assert "four-grid OpenFOAM-10 validation workflow" in readme_text
+    assert "exact 17-point centerline sampling" in readme_text
+    assert "paired `kEpsilon` / `kOmegaSST` diagnostic" in readme_text
+    assert "public continuation snapshot is `1098 / 1802` iterations" in readme_text
+    assert "not a turbulence-model accuracy ranking" in readme_text
     assert "OpenFOAM-10" in readme_text
-    assert "OpenFOAM-11 GitHub Actions workflow is retained as a smoke reproduction path" in readme_text
+    assert "GitHub Actions OpenFOAM-11 workflow is retained as a smoke reproduction path" in readme_text
     assert "`runs/` contains the untracked full local solver fields and logs for validation-v2" in readme_text
     assert "`results/public/` and `figures/` contain the lightweight public CSV summaries and figures exported from those runs" in readme_text
     assert "centerline self-convergence" in readme_text

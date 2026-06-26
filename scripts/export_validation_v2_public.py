@@ -7,9 +7,15 @@ import argparse
 import csv
 from pathlib import Path
 import shutil
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from public_readme import COMBINED_README_INTRO  # noqa: E402
+
 RUN_ROOT = ROOT / "runs/cavity_validation_v2"
 PUBLIC_RESULTS = ROOT / "results/public/cavity_validation_v2"
 PUBLIC_FIGURES = ROOT / "figures/cavity_validation_v2"
@@ -33,12 +39,7 @@ FIGURE_EXPORTS = [
     "error_vs_cost.png",
 ]
 
-README_INTRO = """# OpenFOAM CFD Validation Lab: Re=100 Lid-Driven Cavity Verification
-
-This repository is a controlled numerical validation study for the classical incompressible lid-driven cavity problem at Reynolds number 100. It demonstrates a traditional OpenFOAM workflow: mesh generation, mesh checking, transient solving, residual monitoring, exact centerline sampling, final-time field post-processing, lightweight public export, and smoke reproduction through GitHub Actions.
-
-The full validation-v2 result was generated locally with OpenFOAM-10 across four structured grids. The OpenFOAM-11 GitHub Actions workflow is retained as a smoke reproduction path for the base cavity case, not as the source of the full grid-validation result. This repository is not a production CFD solver or an industrial validation campaign.
-"""
+README_INTRO = COMBINED_README_INTRO
 
 MESH_SECTION = """## Mesh
 

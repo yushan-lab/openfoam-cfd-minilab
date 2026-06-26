@@ -1,0 +1,94 @@
+{
+  "all_checks_passed": true,
+  "checks": {
+    "canonical_snapshot_status_not_rewritten_as_converged": true,
+    "current_public_results_do_not_use_historical_iterations": true,
+    "diagnostic_model_summary_uses_canonical_iterations": true,
+    "public_has_no_raw_openfoam_fields": true,
+    "public_text_has_no_absolute_paths": true,
+    "readme_avoids_forbidden_phrases": true,
+    "readme_contains_quality_status": true,
+    "readme_describes_fixed_continuation": true,
+    "readme_references_existing_rans_main_figures": true,
+    "run_manifest_is_canonical": true,
+    "snapshot_registry_has_canonical_and_historical_iterations": true,
+    "snapshot_registry_paths_are_relative": true,
+    "solver_profile_names_are_explicit": true
+  },
+  "public_file_hashes": {
+    "csv": {
+      "results/public/cavity_centerline_predictions.csv": "a02997e1705aa22d8354122c5fbea40f884bf0c191477b00cf71ef836df051f9",
+      "results/public/cavity_grid_summary.csv": "8f781f74af2708a0460b5e4815e20dd73688af86bda6d14a2253ffbbc128ea7e",
+      "results/public/cavity_validation_v2/manifest.csv": "b5b3bae7200e868f1eaf9aececaea1ff2cf142cdf8f7f54dea18e46d60d9cf57",
+      "results/public/cavity_validation_v2/quality_gates.csv": "7a8992f48e8cdbd73fa792e761f7dd9744ef46adecdfa00d47c7d3020226e946",
+      "results/public/cavity_validation_v2/self_convergence.csv": "18b415cfe7e3f8ed4e18e953c696ae8deaebbd2eab54e50bbd3eda4fd15b8b48",
+      "results/public/cavity_validation_v2/validation_summary.csv": "6eaf984537dfd193be782eb40eb46b074fde8b5c3c9a49e3b8bd630450a099c1",
+      "results/public/rans_pitzdaily/diagnostic_model_summary.csv": "d92e425ad3a089ab686a98ad6083c73af743ba23dd8c7ffd51d7fe743d14d35a",
+      "results/public/rans_pitzdaily/field_stability.csv": "35dce330a0334569215842fcef95e66028e8e0527a3d8a1de7dfbd8246a4b97b",
+      "results/public/rans_pitzdaily/model_summary.csv": "d92e425ad3a089ab686a98ad6083c73af743ba23dd8c7ffd51d7fe743d14d35a",
+      "results/public/rans_pitzdaily/qoi_stability.csv": "b251dd78069a58ae9311d4e65a76f9bd77770e7684d1f232835a689e0a831506",
+      "results/public/rans_pitzdaily/quality_gates.csv": "49fb9c20bf4182769d85e3430bf3c991422d101568f74f476c78ddb56d651554",
+      "results/public/rans_pitzdaily/reattachment_summary.csv": "1d0e1486e37ada4a972428228c91693311e12c029632f6bb8f6cb8faa5d94b58",
+      "results/public/rans_pitzdaily/wall_shear_stability_summary.csv": "167cd7bafbe9c84c9f58e4eb39aa0b79d595951beb14c29baf66d8c06abb60db"
+    },
+    "figures": {
+      "figures/cavity_centerline_profiles.png": "68c368e38e66890b4976b57b64a0ecc0cd7c1af70baa78dc2d853b8d0e91f7ae",
+      "figures/cavity_centerline_validation.png": "fe51d925c73686bedfad165d53413ec8d0c60786f3e42a1f10f005a2d33771e5",
+      "figures/cavity_error_vs_cost.png": "ec2575cecddebefdc90f967c819c6bf89d15d2fe89b74d1adbfb837142f1d9ec",
+      "figures/cavity_grid_error.png": "47976555f4dc81e4f2b6dc5374b2038c9850daaea15bf77405833f6800689d8d",
+      "figures/cavity_residuals.png": "61d335bba03f52044fb82c5a3339934a9d03bc4a7ca879de76b95b556ac23db9",
+      "figures/cavity_residuals_by_grid.png": "9e3b684fd7f7a11d4d93103f9962285accfe3d0df9a52ceddcb15d94da6714c6",
+      "figures/cavity_validation_v2/error_vs_cost.png": "3d03bb8ddda89b8b5b93d95db94132f7abf2f912e19bc5b2e1e706fdc3b51769",
+      "figures/cavity_validation_v2/exact_centerline_vs_ghia.png": "5cb53fb940c1046ba17228bb3de21835698c6e0a4efc5d643fdb477e4d326188",
+      "figures/cavity_validation_v2/grid_to_grid_difference.png": "db74baca8871121f1d2bb73a50f4dcab448214d00e1d595bebdb46a5eca95edd",
+      "figures/cavity_validation_v2/observed_order.png": "ecf65603fa0aa3a9ebcc978625121b16e6794e8004f6cc9879ae6330400e9f82",
+      "figures/cavity_validation_v2/reference_rmse_by_grid.png": "4f8688183987a7e7db985dec667656aa13f28a6a0e21afa8bc23d99cbb983b11",
+      "figures/cavity_velocity_magnitude.png": "c7de49fdcf0e9a4459296faf01a2bc3370e24216c8988127a6854ef2d3270e0d",
+      "figures/rans_pitzdaily/field_model_difference.png": "62fc0fb4f81d6c302be2b4057ce05d293ff73feb575dfc15af9ec61dec710d55",
+      "figures/rans_pitzdaily/field_pressure_comparison.png": "948bc013683cd3bc58b3ba1554dc5f527ab1659ece823bb57d3e9df9c4b57c88",
+      "figures/rans_pitzdaily/field_velocity_comparison.png": "6fc2d05cd9646ba2ab421725941d4b32206090962b149f1f6237034da93f4497",
+      "figures/rans_pitzdaily/iterations_and_cost_comparison.png": "5d7adf47702ef37f5dc5b92351b3b962fdaf9f73be1806d9535ae2be3a56171f",
+      "figures/rans_pitzdaily/legacy/pre_continuation/field_model_difference.png": "5b1392b5ff25bd086f6117893b2fb28216d5010851f4fb3431ac38c841043f79",
+      "figures/rans_pitzdaily/legacy/pre_continuation/field_pressure_comparison.png": "b00114e59cc8bc351fdc929be29818053ecc73c0fafa96573ffd249cb12ae6ef",
+      "figures/rans_pitzdaily/legacy/pre_continuation/field_velocity_comparison.png": "51bc9e92feabc6e3a2613ce532a31365e9923cf2549db650fb7b2de9658a10ef",
+      "figures/rans_pitzdaily/legacy/pre_continuation/lower_wall_shear_comparison.png": "c786aa1b89ccd8eb8c0e402b02ca4becc3a991e4df4c2822cd8b1b66404661d6",
+      "figures/rans_pitzdaily/legacy/pre_continuation/pressure_recovery_comparison.png": "704c602b14524a6f6a5dc61bd5c6522364fd8bdfed7ea9200e48e79ae2d9a8ba",
+      "figures/rans_pitzdaily/legacy/pre_continuation/turbulent_viscosity_ratio_comparison.png": "54609e19f4132ce28642d6a1f7c87e9539ade1d228cdf907df6038296013da11",
+      "figures/rans_pitzdaily/legacy/pre_continuation/yplus_distribution_comparison.png": "22425673839e5ed2d64a5767d69acc0df066fa90e070179c30e7694bc955e8a0",
+      "figures/rans_pitzdaily/lower_wall_shear_comparison.png": "63c5d4728bdef19d8b1e343da5c10c274a7b764c38951268bf26192a12af0652",
+      "figures/rans_pitzdaily/normalized_residual_control.png": "5a3fd51ff40a241271ffb5069ebb28635eba6431b86bd988eab51fb3ffdf1b03",
+      "figures/rans_pitzdaily/pressure_recovery_comparison.png": "86593696076ea6dd3feebffa70aedf3525379ff6253302bb2b13489b7c1026f7",
+      "figures/rans_pitzdaily/residual_by_field_comparison.png": "1476011dc0000a24b8c918258391bd53920e3ebd30f34cfe0dbd81a7695ff94c",
+      "figures/rans_pitzdaily/sst_wall_shear_pointwise_delta.png": "877c0f4211af60dde6a5545c046a322e972c5249290bfd9b3347fb3930d0d032",
+      "figures/rans_pitzdaily/sst_wall_shear_stability.png": "bd14d30d3a9a18ba5bd3c1d191dda44e2382b967cdbc4e637a06e2aa46eb19f1",
+      "figures/rans_pitzdaily/turbulent_viscosity_ratio_comparison.png": "d39ce5a53ac8e2c9d469dda26790d9d9cf9851a8332d3ed180ff2719c0b73d5b",
+      "figures/rans_pitzdaily/yplus_distribution_comparison.png": "6f4fcc7d132614f04f69e883a84c4cf3ed79138f4676725e8f17888af8f1283d"
+    },
+    "json": {
+      "results/public/rans_pitzdaily/run_manifest_public.json": "d91285578b0faa05b824b719fc2ce1300dd87cfbd1162929c2c2e9ce7b38aa9c",
+      "results/public/rans_pitzdaily/snapshot_registry.json": "89866e5b8a03641aa36054b272441a264918fd8bb21b5ad8223cb55c05ca763a",
+      "results/public/rans_pitzdaily/solver_profile.json": "90cdd34cdd7ce86eb63b3ada922b52a7e3ee283ee220ef3e72bb221bb8f58eb7"
+    }
+  },
+  "rans_snapshot_registry": {
+    "canonical_intended_use": [
+      "canonical_diagnostic_snapshot"
+    ],
+    "canonical_iterations": [
+      1098,
+      1802
+    ],
+    "canonical_statuses": [
+      "max_iterations_reached"
+    ],
+    "exists": true,
+    "historical_intended_use": [
+      "historical_pre_stability_snapshot"
+    ],
+    "historical_iterations": [
+      798,
+      1502
+    ],
+    "source_roots_relative": true
+  }
+}

@@ -408,12 +408,25 @@ def test_docs_describe_public_validation_positioning():
     readme = (ROOT / "README.md").read_text()
 
     assert readme.startswith(
-        "# OpenFOAM CFD Validation Lab: Re=100 Lid-Driven Cavity Verification"
+        "# OpenFOAM CFD Validation Lab: Laminar Cavity Verification and Paired RANS Diagnostics"
     )
-    assert "controlled numerical validation study" in readme
+    assert "two reproducible OpenFOAM CFD studies" in readme
+    assert "numerical validation and paired model diagnostics" in readme
+    assert "four-grid OpenFOAM-10 validation workflow" in readme
+    assert "exact 17-point centerline sampling" in readme
+    assert "observed centerline self-convergence order from `1.86` to `2.02`" in readme
+    assert "paired `kEpsilon` / `kOmegaSST` diagnostic" in readme
+    assert "public continuation snapshot is `1098 / 1802` iterations" in readme
+    assert "quality_incomplete_comparison" in readme
+    assert "not a turbulence-model accuracy ranking" in readme
+    assert "fixed +300-iteration QoI stability snapshots" in readme
+    assert "post-convergence QoI stability audit" in readme
+    assert "solver profile and canonical snapshot profile are separate concepts" in readme
+    assert "![RANS velocity field comparison](figures/rans_pitzdaily/field_velocity_comparison.png)" in readme
+    assert "![RANS normalized residual-control history](figures/rans_pitzdaily/normalized_residual_control.png)" in readme
+    assert "![kOmegaSST lower-wall shear stability](figures/rans_pitzdaily/sst_wall_shear_stability.png)" in readme
     assert "OpenFOAM-10" in readme
-    assert "OpenFOAM-11 GitHub Actions workflow is retained as a smoke reproduction path" in readme
-    assert "not a production CFD solver or an industrial validation campaign" in readme
+    assert "GitHub Actions OpenFOAM-11 workflow is retained as a smoke reproduction path" in readme
     assert "MiniLab" not in readme
     assert "intentionally small" not in readme
     assert "Cloud Reproduction with GitHub Actions" in readme
@@ -434,6 +447,12 @@ def test_docs_describe_public_validation_positioning():
     assert "Validation-v2 meshes: `20 x 20 x 1`, `40 x 40 x 1`, `80 x 80 x 1`, and `160 x 160 x 1`" in readme
     assert "python scripts/run_cavity_validation_v2.py --overwrite --resolutions 20 40 80 160 --end-times 20 30 40 50 60 70 80" in readme
     assert "python scripts/export_validation_v2_public.py" in readme
+    assert "RANS Reproduction" in readme
+    assert "MODEL=kEpsilon OVERWRITE=1 bash scripts/run_rans_pitzdaily_case.sh" in readme
+    assert "OVERWRITE=1 bash scripts/run_rans_pitzdaily_formal.sh" in readme
+    assert "python scripts/audit_rans_qoi_stability.py --output-root runs/rans_pitzdaily_formal_v2 --selected-profile conservative_common" in readme
+    assert "python scripts/export_rans_diagnostic_public.py" in readme
+    assert "python scripts/export_all_public.py" in readme
     assert "`runs/cavity_validation_v2/` is not tracked by git" in readme
     assert "`results/public/cavity_validation_v2/` and `figures/cavity_validation_v2/`" in readme
     assert "OpenFOAM Docker image" in readme

@@ -1,0 +1,36 @@
+{
+  "intended_use": "paired RANS model diagnostic",
+  "models": [
+    {
+      "final_iteration": 1098,
+      "intended_use": "paired RANS diagnostic",
+      "lowerWall_yplus_median": "18.91305",
+      "lowerWall_yplus_p95": "26.70693",
+      "model": "kEpsilon",
+      "pressure_recovery_kinematic": "5.0378",
+      "qoi_stability_passed": "True",
+      "quality_gate_status": "incomplete_convergence",
+      "reattachment_length_normalized": "6.678161658120731",
+      "snapshot_id": "canonical_diagnostic_snapshot",
+      "status": "max_iterations_reached",
+      "wall_shear_curve_relative_L2": "0.00691526661675106"
+    },
+    {
+      "final_iteration": 1802,
+      "intended_use": "paired RANS diagnostic",
+      "lowerWall_yplus_median": "14.1862",
+      "lowerWall_yplus_p95": "19.542955",
+      "model": "kOmegaSST",
+      "pressure_recovery_kinematic": "5.441751",
+      "qoi_stability_passed": "False",
+      "quality_gate_status": "incomplete_convergence",
+      "reattachment_length_normalized": "7.763667649254962",
+      "snapshot_id": "canonical_diagnostic_snapshot",
+      "status": "max_iterations_reached",
+      "wall_shear_curve_relative_L2": "0.051898153867788975"
+    }
+  ],
+  "run_id": "rans_pitzdaily_formal_v2",
+  "selected_profile": "continuation_common",
+  "snapshot_id": "canonical_diagnostic_snapshot"
+}

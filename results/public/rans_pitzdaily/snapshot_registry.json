@@ -1,0 +1,44 @@
+{
+  "snapshots": [
+    {
+      "final_iteration": 798,
+      "intended_use": "historical_pre_stability_snapshot",
+      "model": "kEpsilon",
+      "qoi_stability_status": "failed",
+      "quality_gate_status": "passed",
+      "snapshot_id": "historical_pre_stability_snapshot",
+      "source_root": "runs/rans_pitzdaily_formal_v2/conservative_common",
+      "status": "converged"
+    },
+    {
+      "final_iteration": 1502,
+      "intended_use": "historical_pre_stability_snapshot",
+      "model": "kOmegaSST",
+      "qoi_stability_status": "failed",
+      "quality_gate_status": "passed",
+      "snapshot_id": "historical_pre_stability_snapshot",
+      "source_root": "runs/rans_pitzdaily_formal_v2/conservative_common",
+      "status": "converged"
+    },
+    {
+      "final_iteration": 1098,
+      "intended_use": "canonical_diagnostic_snapshot",
+      "model": "kEpsilon",
+      "qoi_stability_status": "passed",
+      "quality_gate_status": "incomplete_convergence",
+      "snapshot_id": "canonical_diagnostic_snapshot",
+      "source_root": "runs/rans_pitzdaily_formal_v2/stability_continuation/continuation_common",
+      "status": "max_iterations_reached"
+    },
+    {
+      "final_iteration": 1802,
+      "intended_use": "canonical_diagnostic_snapshot",
+      "model": "kOmegaSST",
+      "qoi_stability_status": "failed",
+      "quality_gate_status": "incomplete_convergence",
+      "snapshot_id": "canonical_diagnostic_snapshot",
+      "source_root": "runs/rans_pitzdaily_formal_v2/stability_continuation/continuation_common",
+      "status": "max_iterations_reached"
+    }
+  ]
+}

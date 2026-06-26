@@ -92,6 +92,48 @@ def set_end_time(control_dict: Path, max_iterations: int | None) -> None:
     control_dict.write_text(text, encoding="utf-8")
 
 
+def set_relaxation_factors(
+    fv_solution: Path,
+    u_relaxation: float | None,
+    equation_catch_all_relaxation: float | None,
+) -> None:
+    if u_relaxation is None and equation_catch_all_relaxation is None:
+        return
+    lines = fv_solution.read_text(encoding="utf-8").splitlines(keepends=True)
+    updated: list[str] = []
+    in_relaxation = False
+    seen_relaxation = False
+    brace_depth = 0
+
+    for line in lines:
+        if re.match(r"^\s*relaxationFactors\b", line):
+            in_relaxation = True
+            seen_relaxation = True
+            brace_depth = line.count("{") - line.count("}")
+
+        if in_relaxation:
+            if u_relaxation is not None:
+                line = re.sub(r"^(\s*U\s+)[^;]+;", rf"\g<1>{u_relaxation:g};", line)
+            if equation_catch_all_relaxation is not None:
+                line = re.sub(
+                    r'^(\s*"\.\*"\s+)[^;]+;',
+                    rf"\g<1>{equation_catch_all_relaxation:g};",
+                    line,
+                )
+
+        updated.append(line)
+
+        if in_relaxation:
+            if seen_relaxation and brace_depth == 0 and "{" not in line:
+                continue
+            if not re.match(r"^\s*relaxationFactors\b", line):
+                brace_depth += line.count("{") - line.count("}")
+            if seen_relaxation and brace_depth <= 0 and "}" in line:
+                in_relaxation = False
+
+    fv_solution.write_text("".join(updated), encoding="utf-8")
+
+
 def generated_hashes(output: Path) -> dict[str, str]:
     ignored_parts = {"case_manifest.json", "constant/polyMesh", "logs", "results"}
     hashes: dict[str, str] = {}
@@ -123,6 +165,9 @@ def prepare_case(
     output: Path,
     max_iterations: int | str | None = 50,
     overwrite: bool = False,
+    profile_name: str | None = None,
+    u_relaxation: float | None = None,
+    equation_catch_all_relaxation: float | None = None,
 ) -> dict[str, object]:
     if model not in MODELS:
         raise ValueError(f"Unsupported model {model!r}; expected one of {sorted(MODELS)}")
@@ -135,6 +180,7 @@ def prepare_case(
     copy_tree_contents(SOURCE_ROOT / "base", output)
     copy_tree_contents(SOURCE_ROOT / "models" / model, output)
     set_end_time(output / "system/controlDict", parsed_max_iterations)
+    set_relaxation_factors(output / "system/fvSolution", u_relaxation, equation_catch_all_relaxation)
 
     source_manifest = json.loads((SOURCE_ROOT / "case_source.json").read_text(encoding="utf-8"))
     hashes = generated_hashes(output)
@@ -144,7 +190,13 @@ def prepare_case(
         "openfoam_distribution": "Foundation",
         "openfoam_version": openfoam_version(),
         "solver": "simpleFoam",
+        "profile_name": profile_name,
         "max_iterations": parsed_max_iterations if parsed_max_iterations is not None else "official",
+        "relaxation": {
+            "U_exact_entry": u_relaxation,
+            "equation_catch_all_regex": ".*" if equation_catch_all_relaxation is not None else None,
+            "equation_catch_all_value": equation_catch_all_relaxation,
+        },
         "source_hashes": source_manifest["source_file_sha256"],
         "source_case_hashes": source_manifest["generated_file_sha256"],
         "generated_case_hashes": hashes,
@@ -171,13 +223,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", choices=sorted(MODELS), required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-iterations", default="50", help="Positive integer, or 'official' to keep tutorial endTime.")
+    parser.add_argument("--profile-name")
+    parser.add_argument("--u-relaxation", type=float)
+    parser.add_argument("--equation-catch-all-relaxation", type=float)
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    manifest = prepare_case(args.model, args.output, args.max_iterations, args.overwrite)
+    manifest = prepare_case(
+        args.model,
+        args.output,
+        args.max_iterations,
+        args.overwrite,
+        args.profile_name,
+        args.u_relaxation,
+        args.equation_catch_all_relaxation,
+    )
     print(f"Prepared {manifest['model']} case at {args.output}")
     return 0
 

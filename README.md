@@ -1,8 +1,8 @@
-# OpenFOAM CFD Validation Lab: Re=100 Lid-Driven Cavity Verification
+# OpenFOAM CFD Validation Lab: Laminar Cavity Verification and Paired RANS Diagnostics
 
-This repository is a controlled numerical validation study for the classical incompressible lid-driven cavity problem at Reynolds number 100. It demonstrates a traditional OpenFOAM workflow: mesh generation, mesh checking, transient solving, residual monitoring, exact centerline sampling, final-time field post-processing, lightweight public export, and smoke reproduction through GitHub Actions.
+This repository collects two reproducible OpenFOAM CFD studies for numerical validation and paired model diagnostics. The Re=100 lid-driven cavity component documents a four-grid OpenFOAM-10 validation workflow with exact 17-point centerline sampling and observed centerline self-convergence order from `1.86` to `2.02`.
 
-The full validation-v2 result was generated locally with OpenFOAM-10 across four structured grids. The OpenFOAM-11 GitHub Actions workflow is retained as a smoke reproduction path for the base cavity case, not as the source of the full grid-validation result. This repository is not a production CFD solver or an industrial validation campaign.
+The Pitz-Daily RANS component is a paired `kEpsilon` / `kOmegaSST` diagnostic using the same mesh, boundary conditions, numerical schemes, and common relaxation configuration. Its public continuation snapshot is `1098 / 1802` iterations with diagnostic status `quality_incomplete_comparison`; it is not a turbulence-model accuracy ranking.
 
 ## What This Project Demonstrates
 
@@ -14,6 +14,9 @@ The full validation-v2 result was generated locally with OpenFOAM-10 across four
 - Python post-processing of final-time velocity fields.
 - Exact point centerline sampling for the validation-v2 results.
 - Nearest-cell centerline extraction for smoke-run diagnostics.
+- Paired `kEpsilon` / `kOmegaSST` RANS diagnostics on the OpenFOAM `pitzDaily` case.
+- Continuation-based RANS public summaries with explicit snapshot separation.
+- Shared public export and artifact audit for cavity and RANS outputs.
 - Reproducible cloud execution using GitHub Actions and an OpenFOAM Docker image.
 
 <!-- cavity-validation-v2:start -->
@@ -67,6 +70,49 @@ Public validation-v2 files:
 
 ![Validation v2 error versus cost](figures/cavity_validation_v2/error_vs_cost.png)
 <!-- cavity-validation-v2:end -->
+
+<!-- rans-pitzdaily:start -->
+## RANS pitzDaily Paired Diagnostic
+
+This repository also includes a paired RANS model diagnostic for the OpenFOAM `pitzDaily` backward-facing-step tutorial. The diagnostic compares `kEpsilon` and `kOmegaSST` using the same mesh, boundary conditions, numerical schemes, and shared relaxation configuration.
+
+The canonical diagnostic snapshot is the shared +300 iteration continuation under `runs/rans_pitzdaily_formal_v2/stability_continuation/continuation_common/`. The earlier pre-continuation fields are retained only as `historical_pre_stability_snapshot` records in `results/public/rans_pitzdaily/snapshot_registry.json`.
+
+The pre-continuation `conservative_common` runs are the solver-converged baseline: both models triggered SIMPLE convergence and passed solver-integrity, flow-balance, and post-processing quality checks. The public canonical `continuation_common` rows are different: they are fixed +300-iteration QoI stability snapshots advanced from that baseline with `residualControl` disabled. They should not be read as a second SIMPLE-converged solve; their intended use is post-convergence QoI stability audit.
+
+The solver profile and canonical snapshot profile are separate concepts. `results/public/rans_pitzdaily/solver_profile.json` records the common base solver profile as `conservative_common`, while the canonical public snapshot profile is `continuation_common`.
+
+After the fixed +300-iteration continuation, pressure recovery, reattachment location, and lower-wall y+ scalar diagnostics changed by less than 2% over the final 100 iterations. The diagnostic status is `quality_incomplete_comparison` because the full lower-wall shear curve remains the stability boundary: `kEpsilon` passes all QoI stability gates, while `kOmegaSST` has a lower-wall shear curve relative L2 change of `5.19%`, above the preregistered 3% gate.
+
+| Model | Iterations | Pressure recovery | Lower-wall y+ median / p95 | Lr/h | QoI stability |
+|---|---:|---:|---:|---:|---|
+| kEpsilon | 1098 | 5.038 | 18.91 / 26.71 | 6.68 | passed |
+| kOmegaSST | 1802 | 5.442 | 14.19 / 19.54 | 7.76 | wall-shear L2 not passed |
+
+![RANS velocity field comparison](figures/rans_pitzdaily/field_velocity_comparison.png)
+
+![RANS normalized residual-control history](figures/rans_pitzdaily/normalized_residual_control.png)
+
+![kOmegaSST lower-wall shear stability](figures/rans_pitzdaily/sst_wall_shear_stability.png)
+
+This is a paired RANS model diagnostic and stability-boundary study, not a model-fidelity ranking.
+
+Public RANS diagnostic files:
+
+- `results/public/rans_pitzdaily/diagnostic_model_summary.csv`
+- `results/public/rans_pitzdaily/qoi_stability.csv`
+- `results/public/rans_pitzdaily/wall_shear_stability_summary.csv`
+- `results/public/rans_pitzdaily/quality_gates.csv`
+- `results/public/rans_pitzdaily/reattachment_summary.csv`
+- `results/public/rans_pitzdaily/run_manifest_public.json`
+- `results/public/rans_pitzdaily/snapshot_registry.json`
+- `results/public/rans_pitzdaily/solver_profile.json`
+- `figures/rans_pitzdaily/field_velocity_comparison.png`
+- `figures/rans_pitzdaily/field_model_difference.png`
+- `figures/rans_pitzdaily/sst_wall_shear_stability.png`
+- `figures/rans_pitzdaily/sst_wall_shear_pointwise_delta.png`
+<!-- rans-pitzdaily:end -->
+
 ## Smoke Reproduction Outputs
 
 The base tracked outputs under `results/` and `figures/` are smoke-reproduction outputs generated by the GitHub Actions workflow using OpenFOAM Foundation v11.
@@ -190,6 +236,49 @@ The cleanup script removes generated OpenFOAM and post-processing outputs for th
 ```bash
 bash scripts/clean_case.sh
 ```
+
+## RANS Reproduction
+
+Local RANS execution requires an OpenFOAM-10-enabled shell. The GitHub Actions workflow in this repository is a lightweight cavity smoke workflow; it does not run the full RANS diagnostic study.
+
+Run paired smoke cases:
+
+```bash
+MODEL=kEpsilon OVERWRITE=1 bash scripts/run_rans_pitzdaily_case.sh
+MODEL=kOmegaSST OVERWRITE=1 bash scripts/run_rans_pitzdaily_case.sh
+```
+
+Run the formal paired pitzDaily workflow:
+
+```bash
+OVERWRITE=1 bash scripts/run_rans_pitzdaily_formal.sh
+```
+
+Run the QoI stability audit on existing formal-run fields:
+
+```bash
+python scripts/audit_rans_qoi_stability.py --output-root runs/rans_pitzdaily_formal_v2 --selected-profile conservative_common
+```
+
+Run the fixed +300 iteration continuation when the stability audit requires it:
+
+```bash
+python scripts/run_rans_qoi_stability_continuation.py --source-root runs/rans_pitzdaily_formal_v2 --output-root runs/rans_pitzdaily_formal_v2/stability_continuation --selected-profile conservative_common --additional-iterations 300 --write-interval 100 --overwrite
+```
+
+Export the public RANS diagnostic summaries and figures:
+
+```bash
+python scripts/export_rans_diagnostic_public.py
+```
+
+Export both public studies and run the public artifact audit:
+
+```bash
+python scripts/export_all_public.py
+```
+
+The `runs/` directory stores local solver fields and logs and is not tracked by git. Lightweight public RANS CSV/JSON files are written to `results/public/rans_pitzdaily/`; public RANS figures are written to `figures/rans_pitzdaily/`.
 
 ## Cloud Reproduction with GitHub Actions
 

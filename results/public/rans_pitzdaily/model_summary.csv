@@ -1,0 +1,3 @@
+final_iteration,intended_use,lowerWall_yplus_median,lowerWall_yplus_p95,model,pressure_recovery_kinematic,qoi_stability_passed,quality_gate_status,reattachment_length_normalized,snapshot_id,status,wall_shear_curve_relative_L2
+1098,paired RANS diagnostic,18.91305,26.70693,kEpsilon,5.0378,True,incomplete_convergence,6.678161658120731,canonical_diagnostic_snapshot,max_iterations_reached,0.00691526661675106
+1802,paired RANS diagnostic,14.1862,19.542955,kOmegaSST,5.441751,False,incomplete_convergence,7.763667649254962,canonical_diagnostic_snapshot,max_iterations_reached,0.051898153867788975
